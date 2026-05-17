@@ -1416,7 +1416,7 @@ void CreateEntity_SuperEggRobot(MapEntity *me, u16 regionX, u16 regionY, u8 id)
         SET_MAP_ENTITY_INITIALIZED(me);
         return;
     } else {
-        struct Task *t = TaskCreate(Task_SuperEggRobotInit, sizeof(SuperEggRobo), 0x2000, 0, NULL);
+        Task *t = TaskCreate(Task_SuperEggRobotInit, sizeof(SuperEggRobo), 0x2000, 0, NULL);
         SuperEggRobo *boss = TASK_DATA(t);
 
         boss->base.regionX = regionX;
@@ -1432,7 +1432,7 @@ void CreateEntity_SuperEggRobot(MapEntity *me, u16 regionX, u16 regionY, u8 id)
     }
 }
 
-static void TaskDestructor_unused(struct Task *t)
+static void TaskDestructor_unused(Task *t)
 {
     SuperEggRobo *boss = TASK_DATA(t);
     VramFree(boss->unusedSprite.graphics.dest);
@@ -1476,7 +1476,7 @@ SomeTaskManager_7C *sub_8052474(SomeTaskManager_7C *strc, s32 param1, s32 param2
 {
     SomeTaskManager_7C *strc2;
     GfxInfo gfx;
-    struct Task *t;
+    Task *t;
     Sprite *s;
 
     gfx.tileInfo.anim = SA1_ANIM_BOSS_XTRA_HEAD;
@@ -1497,7 +1497,7 @@ SomeTaskManager_7C *sub_80524F0(SomeTaskManager_7C *strc, s32 param1, s32 param2
 {
     SomeTaskManager_7C *strc2;
     GfxInfo gfx;
-    struct Task *t;
+    Task *t;
     Sprite *s;
 
     gfx.tileInfo.anim = SA1_ANIM_BOSS_XTRA_ARM_BEARING;
@@ -1521,7 +1521,7 @@ SomeTaskManager_7C *sub_8052578(SomeTaskManager_7C *strc, s32 param1, s32 param2
 {
     SomeTaskManager_7C *strc2;
     GfxInfo gfx;
-    struct Task *t;
+    Task *t;
     Sprite *s;
 
     gfx.tileInfo.anim = SA1_ANIM_BOSS_XTRA_ARM_BEARING;
@@ -1541,7 +1541,7 @@ SomeTaskManager_7C *sub_80525E0(SomeTaskManager_7C *strc, s32 param1, s32 param2
 {
     SomeTaskManager_7C *strc2;
     GfxInfo gfx;
-    struct Task *t;
+    Task *t;
     Sprite *s;
 
     gfx.tileInfo.anim = SA1_ANIM_BOSS_XTRA_ARM_BEARING;
@@ -1564,7 +1564,7 @@ SomeTaskManager_7C *sub_805265C(SomeTaskManager_7C *strc, s32 param1, s32 param2
 {
     SomeTaskManager_7C *strc2;
     GfxInfo gfx;
-    struct Task *t;
+    Task *t;
     Sprite *s;
 
     gfx.tileInfo.anim = SA1_ANIM_BOSS_XTRA_ARM;
@@ -1583,7 +1583,7 @@ SomeTaskManager_7C *sub_805265C(SomeTaskManager_7C *strc, s32 param1, s32 param2
 SomeTaskManager_7C *sub_80526C4(SomeTaskManager_7C *strc, s32 param1, s32 param2, GfxInfo *gfx, s32 param4)
 {
     SomeTaskManager_7C *strc2;
-    struct Task *t;
+    Task *t;
     Sprite *s;
 
     t = CreateSomeTaskManager_7C_Task(gfx, sub_80519E8, TaskDestructor_SomeTaskManager_60_Common);
@@ -1601,7 +1601,7 @@ SomeTaskManager_7C *sub_80526C4(SomeTaskManager_7C *strc, s32 param1, s32 param2
 SomeTaskManager_7C *sub_8052724(SomeTaskManager_7C *strc, s32 param1, s32 param2, GfxInfo *gfx, s32 param4)
 {
     SomeTaskManager_7C *strc2;
-    struct Task *t;
+    Task *t;
     Sprite *s;
 
     t = CreateSomeTaskManager_7C_Task(gfx, sub_805202C, TaskDestructor_SomeTaskManager_60_Common);
@@ -1619,7 +1619,7 @@ SomeTaskManager_7C *sub_8052724(SomeTaskManager_7C *strc, s32 param1, s32 param2
 SomeTaskManager_7C *sub_8052780(SomeTaskManager_7C *strc, s32 param1, s32 param2, GfxInfo *gfx, s32 param4)
 {
     SomeTaskManager_7C *strc2;
-    struct Task *t;
+    Task *t;
     Sprite *s;
 
     t = CreateSomeTaskManager_7C_Task(gfx, sub_8051C44, TaskDestructor_SomeTaskManager_60_Common);
@@ -1637,7 +1637,7 @@ SomeTaskManager_7C *sub_8052780(SomeTaskManager_7C *strc, s32 param1, s32 param2
 SomeTaskManager_7C *sub_80527DC(SomeTaskManager_7C *strc, s32 param1, s32 param2, GfxInfo *gfx, s32 param4)
 {
     SomeTaskManager_7C *strc2;
-    struct Task *t;
+    Task *t;
     Sprite *s;
 
     t = CreateSomeTaskManager_7C_Task(gfx, sub_8051E38, TaskDestructor_SomeTaskManager_60_Common);
@@ -1658,7 +1658,7 @@ SomeTaskManager_7C *sub_8052838(SuperEggRobo *boss, s32 param1, s32 param2, s32 
 {
     SomeTaskManager_7C *strc2;
     GfxInfo gfx;
-    struct Task *t;
+    Task *t;
     Sprite *s;
 
     gfx.tileInfo.anim = SA1_ANIM_BOSS_XTRA_PALETTE;

@@ -38,7 +38,7 @@ void Task_EggMobileEscape(void);
 
 void CreatePostBossEggMobile(CamCoord worldX, CamCoord worldY)
 {
-    struct Task *t;
+    Task *t;
     PostBossEggMobile *eggMobile;
     Sprite *s;
 

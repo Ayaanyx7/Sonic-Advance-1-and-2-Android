@@ -56,7 +56,7 @@ void Task_802E714(void);
 void Task_802EA8C(void);
 void sub_802E868(void);
 void sub_802ECFC(void);
-void TaskDestructor_EggPress(struct Task *t);
+void TaskDestructor_EggPress(Task *t);
 
 static inline void sub_802EF24_inline(void)
 {
@@ -127,7 +127,7 @@ void sub_802D748(s16 arg0, s16 arg1)
 // TODO: Work out matching without TASK_GET_MEMBER!
 void sub_802D870(void)
 {
-    struct Task *t = gCurTask;
+    Task *t = gCurTask;
     Sprite *s = &TASK_GET_MEMBER(EggPress, t, Sprite, s);
     Sprite *s2 = &TASK_GET_MEMBER(EggPress, t, Sprite, s2);
     s8 *unkAF = &TASK_GET_MEMBER(EggPress, t, s8, unkAF);
@@ -147,7 +147,7 @@ void sub_802D870(void)
 
 void sub_802D908(void)
 {
-    struct Task *t = gCurTask;
+    Task *t = gCurTask;
     Sprite *s = &TASK_GET_MEMBER(EggPress, t, Sprite, s);
     Sprite *s2 = &TASK_GET_MEMBER(EggPress, t, Sprite, s2);
     s16 var_r0;
@@ -168,7 +168,7 @@ void CreateEntity_EggPress(MapEntity *me, u16 regionX, u16 regionY, u8 id)
     Sprite *s;
     Sprite *s2;
     u16 temp_r4_2;
-    struct Task *t;
+    Task *t;
     EggPress *boss;
 
     if (IS_MULTI_PLAYER) {
@@ -393,7 +393,7 @@ void Task_802DEFC(void)
     MapEntity *me;
     CamCoord worldX, worldY;
 
-    struct Task *t = gCurTask;
+    Task *t = gCurTask;
     boss = TASK_DATA(gCurTask);
     sprOuter = &boss->s;
     spr2Outer = &boss->s2;
@@ -744,7 +744,7 @@ void Task_802EA8C(void)
 
     ++boss->unkAC;
     if ((boss->unkAC & 7) == 0) {
-        struct Task *t;
+        Task *t;
         NutsAndBolts *bolts;
         Sprite *sprBolts;
         s32 rndIndex = PseudoRandom32() % ARRAY_COUNT(gUnknown_080BB41C);
@@ -798,7 +798,7 @@ void sub_802ECFC(void)
     }
 
     if ((boss->unkAC & 7) == 0) {
-        struct Task *t;
+        Task *t;
         NutsAndBolts *bolts;
         Sprite *sprBolts;
         s32 rndIndex = PseudoRandom32() % ARRAY_COUNT(gUnknown_080BB41C);
@@ -832,7 +832,7 @@ void sub_802ECFC(void)
     DisplaySprite(s2);
 }
 
-void TaskDestructor_EggPress(struct Task *t)
+void TaskDestructor_EggPress(Task *t)
 {
     EggPress *boss = TASK_DATA(t);
     VramFree(boss->s.graphics.dest);

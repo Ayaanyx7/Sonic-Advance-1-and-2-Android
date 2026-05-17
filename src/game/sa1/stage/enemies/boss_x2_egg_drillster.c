@@ -58,8 +58,8 @@ void Task_8035DD4(void);
 static void CreateFalloffComponents(void);
 void Task_8035F70(void);
 void sub_8035AAC(void);
-void TaskDestructor_EggDrillster(struct Task *t);
-void TaskDestructor_Drill(struct Task *t);
+void TaskDestructor_EggDrillster(Task *t);
+void TaskDestructor_Drill(Task *t);
 void Task_8035F70(void);
 
 void sub_803596C(CamCoord worldX, CamCoord worldY);
@@ -70,7 +70,7 @@ void Task_803623C(void);
 void sub_803673C(void);
 void Task_Drill(void);
 void Task_8036B94(void);
-void TaskDestructor_Drill(struct Task *t);
+void TaskDestructor_Drill(Task *t);
 
 void Task_8036810(void);
 
@@ -202,7 +202,7 @@ void CreateEntity_EggDrillster(MapEntity *me, u16 regionX, u16 regionY, u8 id)
     s32 temp_r4;
     s32 temp_r4_2;
 
-    struct Task *t;
+    Task *t;
     EggDrillster *boss;
 
     if (gBossIndex != 0) {
@@ -533,7 +533,7 @@ void Task_803623C()
 // Almost identical to sub_8034EE0()
 void sub_8036478(CamCoord worldX, CamCoord worldY)
 {
-    struct Task *t;
+    Task *t;
     NutsAndBolts *bolts;
     Sprite *sprBolts;
     s32 rndIndex = PseudoRandom32() % ARRAY_COUNT(gUnknown_080BB41C);
@@ -561,7 +561,7 @@ void sub_8036478(CamCoord worldX, CamCoord worldY)
 static void CreateFalloffComponents()
 {
     EggDrillster *boss = TASK_DATA(gCurTask);
-    struct Task *t;
+    Task *t;
     Component *component;
     Sprite *s;
     u8 i;
@@ -783,14 +783,14 @@ void Task_8036B94()
     }
 }
 
-void TaskDestructor_EggDrillster(struct Task *t)
+void TaskDestructor_EggDrillster(Task *t)
 {
     EggDrillster *boss = TASK_DATA(t);
     VramFree(boss->s.graphics.dest);
     VramFree(boss->s2.graphics.dest);
 }
 
-void TaskDestructor_Drill(struct Task *t)
+void TaskDestructor_Drill(Task *t)
 {
     Component *drill = TASK_DATA(t);
     VramFree(drill->s.graphics.dest);

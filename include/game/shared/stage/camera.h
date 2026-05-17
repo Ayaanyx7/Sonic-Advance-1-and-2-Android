@@ -68,7 +68,7 @@ typedef struct {
     /* 0x56 */ s16 unk56;
 #endif
     /* 0x2C */ BgUpdate fnBgUpdate;
-    /* 0x30 */ struct Task *movementTask;
+    /* 0x30 */ Task *movementTask;
     /* 0x34 */ s16 shakeOffsetX;
     /* 0x36 */ s16 shakeOffsetY;
     /* 0x38 */ s16 SA2_LABEL(unk64);

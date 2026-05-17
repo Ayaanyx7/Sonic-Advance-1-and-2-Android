@@ -30,7 +30,7 @@ typedef struct {
 
 extern const TileInfoFirework gTileInfoZone3Fireworks[2];
 
-void TaskDestructor_MultiplayerSpriteTask(struct Task *);
+void TaskDestructor_MultiplayerSpriteTask(Task *);
 
 void Task_UpdateFireworkAnimation(void)
 {
@@ -206,7 +206,7 @@ void StageBgUpdate_Zone3Acts12(s32 x, s32 y)
 
     if (((gStageTime % 4u) == 0) && ((PseudoRandom32() & 0x700) == 0)) {
         // Spawn Firework, at random location in the sky, randomly big or small.
-        struct Task *t;
+        Task *t;
         CasinoParadiseFirework *firework;
         Sprite *s;
         s32 randX = (((u32)PseudoRandom32() & 0xFF00) >> 8) - 8; // 0 - +256 ---> -8 - +248

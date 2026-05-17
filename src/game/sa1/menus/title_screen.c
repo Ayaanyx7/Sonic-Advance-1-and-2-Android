@@ -37,7 +37,7 @@
 #define MENU_ITEMS_SPACE    14
 #define NUM_MAIN_MENU_ITEMS 5
 
-void TaskDestructor_TitleScreen(struct Task *t);
+void TaskDestructor_TitleScreen(Task *t);
 void Task_800D268();
 void Task_800D450();
 void Task_MainMenu_Select(void);
@@ -95,7 +95,7 @@ typedef struct {
 
 void CreateSegaLogo(void)
 {
-    struct Task *t;
+    Task *t;
     SegaLogo *logo;
     Background *bg;
 
@@ -173,7 +173,7 @@ void Task_800D11C(void)
 
 void CreateSonicTeamLogo(void)
 {
-    struct Task *t;
+    Task *t;
     SonicTeamLogo *logo;
     Background *bg;
 
@@ -338,7 +338,7 @@ typedef struct {
 
 void CreateTitleScreen(u32 playMusic)
 {
-    struct Task *t;
+    Task *t;
     TitleScreen *title;
     Sprite *s;
     Background *bg;
@@ -513,7 +513,7 @@ void CreateMainMenu(u32 param0)
     StrcUi_805423C *temp_r1_3;
     s8 *temp_r0;
 
-    struct Task *t;
+    Task *t;
     MainMenu *menu;
     Sprite *s;
     Background *bg;
@@ -837,7 +837,7 @@ void Task_SwitchToMainMenu(void)
     CreateMainMenu(0);
 }
 
-void TaskDestructor_TitleScreen(struct Task *t)
+void TaskDestructor_TitleScreen(Task *t)
 {
 #ifdef BUG_FIX
     // NOTE: This is *technically* not a bug, but it's more coherent like this.

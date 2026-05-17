@@ -43,8 +43,8 @@ typedef struct {
 
 typedef struct {
     /* 0x00 */ StrcUi_805423C strc;
-    /* 0x0C */ struct Task *task1; // -> (StaffCredits *)
-    /* 0x10 */ struct Task *task2; // -> (StaffCredits *)
+    /* 0x0C */ Task *task1; // -> (StaffCredits *)
+    /* 0x10 */ Task *task2; // -> (StaffCredits *)
     /* 0x14 */ s32 unk14;
 } Credits_18;
 
@@ -52,7 +52,7 @@ void sub_805E1E8(void);
 void Task_805E888(void); // -> StaffCredits
 void Task_805E758(void); // -> StaffCredits
 void Task_805E698(void); // -> Credits_18
-void TaskDestructor_805E9B0(struct Task *t);
+void TaskDestructor_805E9B0(Task *t);
 
 extern void sub_8053370(const char *str, void *param1);
 
@@ -118,10 +118,10 @@ void CreateStaffCredits()
     s32 s_2;
     u16 s_3;
     u16 temp_r1;
-    struct Task *t;
-    struct Task *t1;
-    struct Task *t2;
-    struct Task *t3;
+    Task *t;
+    Task *t1;
+    Task *t2;
+    Task *t3;
     StaffCredits *credits;
     Credits_18 *credits18;
 
@@ -415,4 +415,4 @@ NONMATCH("asm/non_matching/game/sa1/ui/staff_credits__Task_805E888.inc", void Ta
 }
 END_NONMATCH
 
-void TaskDestructor_805E9B0(struct Task *t) { }
+void TaskDestructor_805E9B0(Task *t) { }

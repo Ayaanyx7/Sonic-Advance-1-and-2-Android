@@ -34,7 +34,7 @@ typedef struct {
 
 void CreatePlayerDataMenu();
 void Task_PlayerDataMenuInit(void);
-void TaskDestructor_PlayerDataMenu(struct Task *t);
+void TaskDestructor_PlayerDataMenu(Task *t);
 void sub_8011C94(void);
 
 extern void CreateOptionsMenu();
@@ -69,7 +69,7 @@ void CreatePlayerDataMenu()
     StrcUi_805423C *temp_r4;
     u8 i;
 
-    struct Task *t;
+    Task *t;
     PlayerDataMenu *menu;
 
     gDispCnt = 0x1140;
@@ -321,7 +321,7 @@ void PlayerDataSelectOK(void)
     CreateOptionsMenu();
 }
 
-void TaskDestructor_PlayerDataMenu(struct Task *t)
+void TaskDestructor_PlayerDataMenu(Task *t)
 {
     PlayerDataMenu *menu;
     u8 i;

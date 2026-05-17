@@ -17,14 +17,14 @@ typedef struct {
 } GrindEffect;
 
 void Task_GrindEffect(void);
-void TaskDestructor_GrindEffect(struct Task *);
+void TaskDestructor_GrindEffect(Task *);
 
 // NOTE: This effect is unused in SA2.
 //       It is the code for SA1's Grind effect
 
-struct Task *CreateGrindEffect()
+Task *CreateGrindEffect()
 {
-    struct Task *t = TaskCreate(Task_GrindEffect, sizeof(GrindEffect), 0x2001, 0, TaskDestructor_GrindEffect);
+    Task *t = TaskCreate(Task_GrindEffect, sizeof(GrindEffect), 0x2001, 0, TaskDestructor_GrindEffect);
 
     GrindEffect *spark = TASK_DATA(t);
     Sprite *s = &spark->s;
@@ -77,7 +77,7 @@ void Task_GrindEffect(void)
     }
 }
 
-void TaskDestructor_GrindEffect(struct Task *t)
+void TaskDestructor_GrindEffect(Task *t)
 {
     GrindEffect *spark = TASK_DATA(t);
     VramFree(spark->s.graphics.dest);

@@ -45,7 +45,7 @@ void CreateTimeAttackMenu(void)
 {
     Strc_80528AC sp4;
     s32 var_r0;
-    struct Task *t;
+    Task *t;
     TimeAttackMenu *menu;
     Sprite *s;
 

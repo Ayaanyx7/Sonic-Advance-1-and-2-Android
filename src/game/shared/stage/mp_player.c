@@ -60,7 +60,7 @@ u32 unused_3005838 = 0;
 bool8 gShouldSpawnMPAttack2Effect = FALSE;
 
 void Task_CreateMultiplayerPlayer(void);
-void TaskDestructor_MultiplayerPlayer(struct Task *);
+void TaskDestructor_MultiplayerPlayer(Task *);
 
 void SA2_LABEL(sub_8016D20)(void);
 void SA2_LABEL(sub_801707C)(void);
@@ -80,7 +80,7 @@ const u16 gUnknown_02015B18[] = { 0x55, 0x59, 0x5D, 0x61 };
 
 void CreateMultiplayerPlayer(u8 id)
 {
-    struct Task *t = TaskCreate(Task_CreateMultiplayerPlayer, sizeof(MultiplayerPlayer), 0x2000, 0, TaskDestructor_MultiplayerPlayer);
+    Task *t = TaskCreate(Task_CreateMultiplayerPlayer, sizeof(MultiplayerPlayer), 0x2000, 0, TaskDestructor_MultiplayerPlayer);
     MultiplayerPlayer *mpp = TASK_DATA(t);
     Sprite *s;
     SpriteTransform *tf;
@@ -261,7 +261,7 @@ NONMATCH("asm/non_matching/game/shared/stage/sa1_mp_player__Task_CreateMultiplay
     MultiplayerPlayer *sp14;
     s32 temp_r4_2;
     s32 var_sl;
-    struct Task **var_r5_2;
+    Task **var_r5_2;
     u16 temp_r1;
     u16 temp_r1_3;
     u16 temp_r1_4;
@@ -2152,7 +2152,7 @@ void SA2_LABEL(sub_8018818)(void)
 }
 #endif
 
-void TaskDestructor_MultiplayerPlayer(struct Task *t)
+void TaskDestructor_MultiplayerPlayer(Task *t)
 {
     MultiplayerPlayer *mpp = TASK_DATA(t);
     gMultiplayerPlayerTasks[mpp->unk56] = NULL;
@@ -2162,7 +2162,7 @@ void TaskDestructor_MultiplayerPlayer(struct Task *t)
 #ifndef COLLECT_RINGS_ROM
 void LaunchPlayer(s16 airSpeedY)
 {
-    struct Task *t = TaskCreate(Task_HandleLaunchPlayer, sizeof(s16), 0x2000, 0, NULL);
+    Task *t = TaskCreate(Task_HandleLaunchPlayer, sizeof(s16), 0x2000, 0, NULL);
     s16 *airSpeed = TASK_DATA(t);
     *airSpeed = airSpeedY;
     gPlayer.moveState |= MOVESTATE_IGNORE_INPUT;

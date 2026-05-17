@@ -18,7 +18,7 @@ typedef struct {
 typedef struct {
     /* 0x00 */ StrcUi_805423C strc;
     /* 0x0C */ Sprite s;
-    /* 0x3C */ struct Task *task3C;
+    /* 0x3C */ Task *task3C;
     /* 0x40 */ s32 unk40;
     /* 0x44 */ s32 unk44;
 } VsRecord_48;
@@ -36,7 +36,7 @@ void Task_VsRecordInit(void);
 void Task_8060874(void);
 void sub_806012C(void);
 void CreatePlayerDataMenu(void);
-void TaskDestructor_VsRecord(struct Task *t);
+void TaskDestructor_VsRecord(Task *t);
 
 extern void sub_805321C(u8 *param0, GameOverB *param1);
 extern void sub_805345C(u8 *param0, GameOverB *param1);
@@ -253,7 +253,7 @@ void CreateVsRecord()
     VsRecord_10 *temp_r2;
     VsRecord_10 *temp_r5;
     s32 temp_r1;
-    struct Task *t;
+    Task *t;
     u8 i, j;
 
     VsRecord_48 *record48;
@@ -588,4 +588,4 @@ NONMATCH("asm/non_matching/game/sa1/ui/vs_record__Task_8060874.inc", void Task_8
 }
 END_NONMATCH
 
-void TaskDestructor_VsRecord(struct Task *t) { }
+void TaskDestructor_VsRecord(Task *t) { }

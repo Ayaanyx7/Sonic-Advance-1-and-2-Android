@@ -37,7 +37,7 @@ void Task_Item_Shield_Normal(void);
 void Task_Item_Invincibility(void);
 void Task_Item_Shield_Magnetic(void);
 void Task_Item_Confusion(void);
-void TaskDestructor_ItemTasks(struct Task *);
+void TaskDestructor_ItemTasks(Task *);
 
 #define ITEMTASK_GET_PLAYER_NUM()                                                                                                          \
     ({                                                                                                                                     \
@@ -45,9 +45,9 @@ void TaskDestructor_ItemTasks(struct Task *);
         it->unk30;                                                                                                                         \
     })
 
-struct Task *CreateItemTask_Shield_Normal(s8 playerID)
+Task *CreateItemTask_Shield_Normal(s8 playerID)
 {
-    struct Task *t = TaskCreate(Task_Item_Shield_Normal, sizeof(ItemTask), 0x4001, 0, TaskDestructor_ItemTasks);
+    Task *t = TaskCreate(Task_Item_Shield_Normal, sizeof(ItemTask), 0x4001, 0, TaskDestructor_ItemTasks);
     ItemTask *item = TASK_DATA(t);
     Sprite *s = &item->s;
 
@@ -75,9 +75,9 @@ struct Task *CreateItemTask_Shield_Normal(s8 playerID)
     return t;
 }
 
-struct Task *CreateItemTask_Invincibility(s8 playerID)
+Task *CreateItemTask_Invincibility(s8 playerID)
 {
-    struct Task *t = TaskCreate(Task_Item_Invincibility, sizeof(ItemTask), 0x4001, 0, TaskDestructor_ItemTasks);
+    Task *t = TaskCreate(Task_Item_Invincibility, sizeof(ItemTask), 0x4001, 0, TaskDestructor_ItemTasks);
     ItemTask *item = TASK_DATA(t);
     Sprite *s = &item->s;
 
@@ -103,9 +103,9 @@ struct Task *CreateItemTask_Invincibility(s8 playerID)
     return t;
 }
 
-struct Task *CreateItemTask_Shield_Magnetic(s8 playerID)
+Task *CreateItemTask_Shield_Magnetic(s8 playerID)
 {
-    struct Task *t = TaskCreate(Task_Item_Shield_Magnetic, sizeof(ItemTask), 0x4001, 0, TaskDestructor_ItemTasks);
+    Task *t = TaskCreate(Task_Item_Shield_Magnetic, sizeof(ItemTask), 0x4001, 0, TaskDestructor_ItemTasks);
     ItemTask *item = (ItemTask *)TASK_DATA(t);
 
     item->unk30 = playerID;
@@ -137,9 +137,9 @@ struct Task *CreateItemTask_Shield_Magnetic(s8 playerID)
     return t;
 }
 
-struct Task *CreateItemTask_Confusion(s8 playerID)
+Task *CreateItemTask_Confusion(s8 playerID)
 {
-    struct Task *t = TaskCreate(Task_Item_Confusion, sizeof(ItemTask), 0x4001, 0, TaskDestructor_ItemTasks);
+    Task *t = TaskCreate(Task_Item_Confusion, sizeof(ItemTask), 0x4001, 0, TaskDestructor_ItemTasks);
     ItemTask *item = TASK_DATA(t);
 
     item->unk30 = playerID;
@@ -482,7 +482,7 @@ void Task_Item_Invincibility(void)
 #if (GAME == GAME_SA1)
     if ((gStageTime & 0x7) == 0) {
         // Create random small "sparkle" effects during invincibility
-        struct Task *t;
+        Task *t;
         MultiplayerSpriteTask *mpSprite;
         Sprite *sprInvin;
 #ifndef NON_MATCHING
@@ -581,7 +581,7 @@ void Task_Item_Confusion(void)
     }
 }
 
-void TaskDestructor_ItemTasks(struct Task *t)
+void TaskDestructor_ItemTasks(Task *t)
 {
     ItemTask *item = TASK_DATA(t);
     VramFree(item->s.graphics.dest);

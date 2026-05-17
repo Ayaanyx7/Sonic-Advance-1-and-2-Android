@@ -207,7 +207,7 @@ void sub_802D3E4(void);
 void sub_802D450(void);
 void sub_802D4C4(void);
 void Task_802D508(void);
-void TaskDestructor_802D578(struct Task *t);
+void TaskDestructor_802D578(Task *t);
 void sub_802D560(void);
 u8 sub_802D58C(s16 param0);
 void SpStage_PlayRingSoundeffect(void); // 0x0802D5EC
@@ -2564,7 +2564,7 @@ void sub_802D190(void)
 
 void sub_802D1D8(void)
 {
-    struct Task *t = TaskCreate(Task_802B3E4, sizeof(SpStage8), 0x1400, 0, NULL);
+    Task *t = TaskCreate(Task_802B3E4, sizeof(SpStage8), 0x1400, 0, NULL);
     SpStage8 *strc8 = TASK_DATA(t);
     strc8->unk2 = 0;
     strc8->unk4 = 0;
@@ -2763,7 +2763,7 @@ void sub_802D560(void)
     }
 }
 
-void TaskDestructor_802D578(struct Task *t)
+void TaskDestructor_802D578(Task *t)
 {
     SpStage40 *strc40 = TASK_DATA(t);
     EwramFree(strc40->mem);

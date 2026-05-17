@@ -24,8 +24,8 @@ extern void SA2_LABEL(sub_8022838)(Player *p);
 void sub_80472B8(Player *p);
 void Player_AirInputControls(Player *p);
 
-struct Task *Player_Knuckles_InitGfx_UppercutFlame(Player *p);
-struct Task *Player_Knuckles_InitGfx_FloatSplash(Player *p);
+Task *Player_Knuckles_InitGfx_UppercutFlame(Player *p);
+Task *Player_Knuckles_InitGfx_FloatSplash(Player *p);
 
 extern const u8 gCharStatesKnucklesGlideTurn[];
 
@@ -1032,7 +1032,7 @@ void Player_Knuckles_8049000(Player *p)
 
 void Task_KnucklesFloatSplash(void)
 {
-    struct Task *t = gCurTask;
+    Task *t = gCurTask;
     MultiplayerSpriteTask *mps = TASK_DATA(gCurTask);
     u8 mpid = mps->mpPlayerID;
     Sprite *s = &mps->s;
@@ -1120,10 +1120,9 @@ void sub_8049208(Player *p)
     SA2_LABEL(sub_8022190)(p);
 }
 
-struct Task *Player_Knuckles_InitGfx_UppercutFlame(Player *p)
+Task *Player_Knuckles_InitGfx_UppercutFlame(Player *p)
 {
-    struct Task *t
-        = CreateMultiplayerSpriteTask(0, 0, 224, p->playerID, Task_UpdateMpSpriteTaskSprite, TaskDestructor_MultiplayerSpriteTask);
+    Task *t = CreateMultiplayerSpriteTask(0, 0, 224, p->playerID, Task_UpdateMpSpriteTaskSprite, TaskDestructor_MultiplayerSpriteTask);
     MultiplayerSpriteTask *mps = TASK_DATA(t);
     Sprite *s = &mps->s;
 
@@ -1136,9 +1135,9 @@ struct Task *Player_Knuckles_InitGfx_UppercutFlame(Player *p)
     return t;
 }
 
-struct Task *Player_Knuckles_InitGfx_FloatSplash(Player *p)
+Task *Player_Knuckles_InitGfx_FloatSplash(Player *p)
 {
-    struct Task *t = CreateMultiplayerSpriteTask(0, 0, 96, p->playerID, Task_KnucklesFloatSplash, TaskDestructor_MultiplayerSpriteTask);
+    Task *t = CreateMultiplayerSpriteTask(0, 0, 96, p->playerID, Task_KnucklesFloatSplash, TaskDestructor_MultiplayerSpriteTask);
     MultiplayerSpriteTask *mps = TASK_DATA(t);
     Sprite *s = &mps->s;
 

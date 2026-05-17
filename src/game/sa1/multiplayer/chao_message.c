@@ -59,8 +59,8 @@ void sub_803BC64(void);
 void sub_803BE0C(void);
 void sub_803BEB8(void);
 void sub_803BFE8(void);
-void TaskDestructor_803C184(struct Task *t);
-void TaskDestructor_803C198(struct Task *t);
+void TaskDestructor_803C184(Task *t);
+void TaskDestructor_803C198(Task *t);
 
 extern void sub_8018538(void);
 extern void CreateMultiplayerContinueScreen(void);
@@ -908,13 +908,13 @@ void Task_803C130(void)
     DisplaySprite(s);
 }
 
-void TaskDestructor_803C184(struct Task *t)
+void TaskDestructor_803C184(Task *t)
 {
     ChaoMsgSprite *msgSprite = TASK_DATA(t);
     VramFree(msgSprite->s.graphics.dest);
 }
 
-void TaskDestructor_803C198(struct Task *t)
+void TaskDestructor_803C198(Task *t)
 {
     ChaoMsg68 *strc68 = TASK_DATA(t);
     VramFree(strc68->vram64);

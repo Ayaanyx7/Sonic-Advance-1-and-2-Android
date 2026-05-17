@@ -76,7 +76,7 @@ Camera ALIGNED(8) gCamera = {};
 
 static void RenderMetatileLayers(s32, s32);
 void Task_CallUpdateCamera(void);
-void TaskDestructor_Camera(struct Task *);
+void TaskDestructor_Camera(Task *);
 void Task_UpdateCamera(void);
 
 // Dummy callbacks
@@ -1025,7 +1025,7 @@ void DestroyCameraMovementTask(void)
     gCamera.movementTask = NULL;
 }
 
-void TaskDestructor_Camera(struct Task *unused)
+void TaskDestructor_Camera(Task *unused)
 {
     s32 i;
     gCamera.movementTask = NULL;
@@ -1140,11 +1140,11 @@ UNUSED void SA2_LABEL(sub_801E3F0)(void)
 
 #if (GAME == GAME_SA1)
 // Not sure why this is defined here
-struct Task *SpawnCasinoFireworkMP(s16 x, s16 y, s32 fireworkType)
+Task *SpawnCasinoFireworkMP(s16 x, s16 y, s32 fireworkType)
 {
     const TileInfoFirework *tileInfo = &gTileInfoZone3Fireworks[fireworkType % ARRAY_COUNT(gTileInfoZone3Fireworks)];
     CasinoParadiseFirework *firework;
-    struct Task *t;
+    Task *t;
     Sprite *s;
 
     t = CreateMultiplayerSpriteTask(x, y, 0, 0, Task_UpdateFireworkAnimation, TaskDestructor_MultiplayerSpriteTask);

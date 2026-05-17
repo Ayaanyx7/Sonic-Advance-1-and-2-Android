@@ -297,7 +297,7 @@ PlayerSpriteInfo ALIGNED(16) gPartnerBodyPSI = {};
 void Task_PlayerMain(void);
 void AllocateCharacterStageGfx(Player *p, PlayerSpriteInfo *param2);
 void AllocateCharacterMidAirGfx(Player *p, PlayerSpriteInfo *param2);
-void TaskDestructor_Player(struct Task *);
+void TaskDestructor_Player(Task *);
 
 void SA2_LABEL(sub_802486C)(Player *p, PlayerSpriteInfo *psi);
 void SA2_LABEL(sub_8024B10)(Player *p, PlayerSpriteInfo *psi);
@@ -665,7 +665,7 @@ static const u8 disableTrickTimerTable[4] = { 4, 3, 2, 2 };
 #ifndef COLLECT_RINGS_ROM
 void CreatePlayer(u32 UNUSED characterId, u32 levelId, Player *player)
 {
-    struct Task *t;
+    Task *t;
     player_0_Task *gt;
 
     Player *p = player;
@@ -8368,9 +8368,9 @@ void sub_8028478(Player *p)
 /* Starting here, callbacks appear to have a different style,
    but they still use macros like PLAYERFN_UPDATE_POSITION */
 
-struct Task *sub_8028640(s32 x, s32 y, s32 p2)
+Task *sub_8028640(s32 x, s32 y, s32 p2)
 {
-    struct Task *t;
+    Task *t;
     MultiplayerSpriteTask *taskStrc;
     Sprite *s;
 
@@ -9178,7 +9178,7 @@ void CallSetStageSpawnPos(u32 character, u32 level, u32 playerID, Player *p) { S
 #if COLLECT_RINGS_ROM
 void CreatePlayer(u32 UNUSED characterId, u32 UNUSED levelId, Player *player)
 {
-    struct Task *t;
+    Task *t;
     player_0_Task *gt;
 
     Player *p = player;
@@ -9817,7 +9817,7 @@ void Player_InitializeDrowning(Player *p)
 }
 #endif
 
-void TaskDestructor_Player(struct Task *t)
+void TaskDestructor_Player(Task *t)
 {
     player_0_Task *gt = TASK_DATA(t);
     Player *p;

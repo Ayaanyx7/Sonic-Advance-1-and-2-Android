@@ -27,12 +27,12 @@
 
 typedef struct {
     StrcUi_805423C strc0;
-    struct Task *taskC; // SoundTest114
-    struct Task *task10; // SoundTest114
-    struct Task *task14; // SoundTest114
-    struct Task *task18; // SoundTest114
-    struct Task *task1C; // SoundTest114
-    struct Task *task20; // SoundTest114
+    Task *taskC; // SoundTest114
+    Task *task10; // SoundTest114
+    Task *task14; // SoundTest114
+    Task *task18; // SoundTest114
+    Task *task1C; // SoundTest114
+    Task *task20; // SoundTest114
     s32 unk24;
     u8 unk28;
     u8 unk29;
@@ -147,7 +147,7 @@ void CreateSoundTest(void)
     Sprite *s;
     SpriteTransform *tf;
     StrcUi_805423C *strc0;
-    struct Task *t;
+    Task *t;
     SoundTestState *state;
     SoundTest114 *temp_r1_2;
     SoundTest114 *temp_r4;
@@ -459,7 +459,7 @@ void Task_SoundTestInit(void)
     SoundTest114 *spC;
     SoundTest114 *sp10;
     SoundTest114 *sp14;
-    struct Task *t;
+    Task *t;
     s32 var_r0;
     s32 var_r1;
     struct MP2KPlayerState *mp2kState;
