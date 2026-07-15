@@ -1,0 +1,67 @@
+name: Build Sonic Advance Android Port
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: # Allows manual trigger from the GitHub Actions UI
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install Extraction Dependencies
+      run: |
+        pip install Pillow
+
+    - name: Download Base GBA ROM Safely
+      run: |
+        curl -L -o baserom_sa1.gba "${{ secrets.ROM_DOWNLOAD_URL }}"
+        echo "eb00f101af23d728075ac2117e27ecd8a4b4c3e9 baserom_sa1.gba" | sha1sum -c -
+
+    - name: Run SAT-R Asset Extractor
+      run: |
+        mkdir -p app/src/main/assets
+        python tools/extract_assets.py --game sa1 --rom baserom_sa1.gba --out app/src/main/assets/
+
+    - name: Download and Prepare SDL 2.30
+      run: |
+        mkdir -p app/jni
+        curl -L -o sdl2.zip https://github.com
+        unzip sdl2.zip
+        mv SDL2-2.30.11 app/jni/SDL
+        rm sdl2.zip
+
+    - name: Make Gradle Wrapper Executable
+      run: chmod +x gradlew
+
+    - name: Build Android APK with Gradle
+      run: ./gradlew assembleDebug
+
+    - name: Upload Finished APK Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sonic-advance-debug-apk
+        path: app/build/outputs/apk/debug/app-debug.apk
