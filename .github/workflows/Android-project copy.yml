@@ -1,0 +1,10 @@
+- name: Checkout SDL
+  uses: actions/checkout@v4
+  with:
+    repository: libsdl-org/SDL
+    ref: release-2.30.11
+    path: SDL
+
+- name: Copy Android project
+  run: |
+    cp -r SDL/android-project/* .
