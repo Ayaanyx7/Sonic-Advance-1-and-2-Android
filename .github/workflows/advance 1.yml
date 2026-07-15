@@ -24,10 +24,10 @@ jobs:
       - uses: android-actions/setup-android@v3
 
       - name: Grant Gradle permission
-        run: chmod +x gradlew
+        - run: chmod +x android-project/gradlew
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug
+        - run: cd android-project && ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
