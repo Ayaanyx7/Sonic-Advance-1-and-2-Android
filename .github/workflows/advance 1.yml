@@ -37,13 +37,15 @@ jobs:
 
     - name: Download Base GBA ROM Safely
       run: |
-        curl -L -o baserom_sa1.gba "${{ secrets.ROM_DOWNLOAD_URL }}"
+        curl -L -o "Sonic Advance (Europe) (En,Ja,Fr,De,Es).gba" "${{ secrets.ROM_DOWNLOAD_URL }}"
+        mv "Sonic Advance (Europe) (En,Ja,Fr,De,Es).gba" baserom_sa1.gba
         echo "eb00f101af23d728075ac2117e27ecd8a4b4c3e9 baserom_sa1.gba" | sha1sum -c -
 
     - name: Run SAT-R Asset Extractor
       run: |
         mkdir -p app/src/main/assets
-        python scripts/extract_assets.py --game sa1 --rom baserom_sa1.gba --out app/src/main/assets/
+        make extract
+        mv graphics/ sound/ tilemaps/ app/src/main/assets
 
     - name: Download and Prepare SDL 2.30
       run: |
