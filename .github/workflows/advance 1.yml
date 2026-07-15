@@ -44,7 +44,7 @@ jobs:
     - name: Run SAT-R Asset Extractor
       run: |
         mkdir -p app/src/main/assets
-        make extract
+        make GAME_NAME=sa1
         mv graphics/ sound/ tilemaps/ app/src/main/assets
 
     - name: Download and Prepare SDL 2.30
