@@ -1,29 +1,24 @@
 name: Copy SDL Android Project
-
 on:
   workflow_dispatch:
 permissions:
   contents: write
-
 jobs:
   copy-sdl:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout your repo
         uses: actions/checkout@v4
-
       - name: Checkout SDL
         uses: actions/checkout@v4
         with:
           repository: libsdl-org/SDL
           path: SDL
-
+          ref: release-3.2.0
       - name: Copy android-project
         run: |
           mkdir -p android-project
           cp -r SDL/android-project/* android-project/
-
       - name: Commit changes
         run: |
           git config user.name "github-actions"
