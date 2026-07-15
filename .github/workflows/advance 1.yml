@@ -35,6 +35,11 @@ jobs:
       run: |
         pip install Pillow
 
+        - name: Install System Development Tools (libpng)
+          run: |
+            sudo apt-get update
+            sudo apt-get install -y libpng-dev build-essential
+
     - name: Download Base GBA ROM Safely
       run: |
         curl -L -o "Sonic Advance (Europe) (En,Ja,Fr,De,Es).gba" "${{ secrets.ROM_DOWNLOAD_URL }}"
