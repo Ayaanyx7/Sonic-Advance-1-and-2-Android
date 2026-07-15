@@ -2,6 +2,8 @@ name: Copy SDL Android Project
 
 on:
   workflow_dispatch:
+permissions:
+  contents: write
 
 jobs:
   copy-sdl:
