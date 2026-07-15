@@ -43,7 +43,7 @@ jobs:
     - name: Run SAT-R Asset Extractor
       run: |
         mkdir -p app/src/main/assets
-        python tools/extract_assets.py --game sa1 --rom baserom_sa1.gba --out app/src/main/assets/
+        python scripts/extract_assets.py --game sa1 --rom baserom_sa1.gba --out app/src/main/assets/
 
     - name: Download and Prepare SDL 2.30
       run: |
