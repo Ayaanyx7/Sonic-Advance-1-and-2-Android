@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sonic Advance Asset Extractor</title>
+    <script src="https://jsdelivr.net"></script>
+    <script src="https://cloudflare.com"></script>
+    <style>
+        body { background: #1a1a1a; color: #fff; font-family: sans-serif; text-align: center; padding: 40px; }
+        select, input, button { font-size: 16px; padding: 10px; margin: 10px; border-radius: 5px; border: none; }
+        button { background: #3498db; color: white; cursor: pointer; font-weight: bold; }
+        button:hover { background: #2980b9; }
+        #status { font-weight: bold; color: #f1c40f; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Sonic Advance Mobile Asset Extractor</h1>
+    <p>Extract your graphics and sound files completely client-side inside your browser.</p>
+    
+    <div>
+        <label for="game-select">Target Profile:</label>
+        <select id="game-select">
+            <option value="sa1">Sonic Advance 1 (Europe)</option>
+            <option value="sa2">Sonic Advance 2 (USA) / 2 Plus</option>
+        </select>
+    </div>
+    
+    <div>
+        <input type="file" id="rom-input" accept=".gba">
+        <button onclick="processRom()">Extract and Package Assets</button>
+    </div>
+    
+    <div id="status">Waiting for input ROM file...</div>
+
+    <script>
+        async function processRom() {
+            const input = document.getElementById('rom-input');
+            const game = document.getElementById('game-select').value;
+            const status = document.getElementById('status');
+            
+            if (input.files.length === 0) return alert("Please select a ROM file first!");
+            
+            status.innerText = "Initializing internal WebAssembly Python environment...";
+            let pyodide = await loadPyodide();
+            
+            const file = input.files[0];
+            const arrayBuffer = await file.arrayBuffer();
+            const uint8Array = new Uint8Array(arrayBuffer);
+            
+            // Map the rom name exactly to what the internal python extractor scripts seek
+            const targetRomName = (game === "sa1") ? "baserom_sa1.gba" : "baserom_sa2.gba";
+            pyodide.FS.writeFile(targetRomName, uint8Array);
+            
+            status.innerText = "Fetching extraction orchestration matrix tools...";
+            // Point this URL precisely to your master fork asset tracking tools
+            const scriptResponse = await fetch(`https://githubusercontent.com`);
+            const scriptText = await scriptResponse.text();
+            
+            try {
+                status.innerText = "Executing ROM decompilation loops (this will take a moment)...";
+                await pyodide.runPythonAsync(scriptText);
+                
+                status.innerText = "Bundling loose assets into container zip data payloads...";
+                let zip = new JSZip();
+                
+                function packFolder(vPath, zipTarget) {
+                    let items = pyodide.FS.readdir(vPath);
+                    for (let item of items) {
+                        if (item === "." || item === "..") continue;
+                        let fullPath = vPath + "/" + item;
+                        let mode = pyodide.FS.stat(fullPath).mode;
+                        if (pyodide.FS.isDir(mode)) {
+                            packFolder(fullPath, zipTarget.folder(item));
+                        } else {
+                            zipTarget.file(item, pyodide.FS.readFile(fullPath));
+                        }
+                    }
+                }
+                
+                packFolder('/graphics', zip.folder('graphics'));
+                packFolder('/sound', zip.folder('sound'));
+                
+                zip.generateAsync({type:"blob"}).then(function(content) {
+                    let dlLink = document.createElement('a');
+                    dlLink.href = URL.createObjectURL(content);
+                    dlLink.download = `${game}_assets.zip`;
+                    dlLink.click();
+                    status.innerText = "Extraction Complete! Drop unzipped folders directly onto phone storage path.";
+                });
+            } catch (err) {
+                status.innerText = "CRITICAL ERROR: " + err;
+            }
+        }
+    </script>
+</body>
+</html>
