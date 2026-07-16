@@ -29,8 +29,11 @@ jobs:
 
       - name: Fetch Clean SDL2 Dependency
         run: |
-          curl -L "https://libsdl.org" -o sdl2.tar.gz
+          rm -f sdl2.tar.gz
+          rm -rf SDL2-2.30.0
+          curl -L "https://github.com" -o sdl2.tar.gz
           tar -xzf sdl2.tar.gz
+          rm -rf android-project/app/src/main/jni/SDL2
           mv SDL2-2.30.0 android-project/app/src/main/jni/SDL2
 
       - name: Execute Android NDK Compilation via Gradle
