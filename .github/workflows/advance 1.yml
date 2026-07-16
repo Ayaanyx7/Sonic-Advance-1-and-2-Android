@@ -27,11 +27,12 @@ jobs:
       - name: Install Target NDK Toolchain
         run: sdkmanager --install "ndk;25.2.9519653"
 
-      - name: Fetch Clean SDL2 Framework Dependency
+       - name: Fetch Clean SDL2 Dependency
         run: |
-          curl -L https://github.com -o sdl2.tar.gz
+          curl -L "https://github.com" -o sdl2.tar.gz
           tar -xzf sdl2.tar.gz
           mv SDL2-2.30.0 android-project/app/src/main/jni/SDL2
+
 
       - name: Execute Android NDK Compilation via Gradle
         run: |
