@@ -1,18 +1,18 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sonic Advance Asset Extractor</title>
-    <script src="https://jsdelivr.net"></script>
-    <script src="https://cloudflare.com"></script>
     <style>
         body { background-color: #1a1a1a !important; color: #ffffff !important; font-family: sans-serif; text-align: center; padding: 40px; margin: 0; }
         .main-container { background: #2c3e50; max-width: 600px; margin: 40px auto; padding: 30px; border-radius: 10px; border: 3px solid #3498db; }
-        select, input, button { font-size: 16px; padding: 12px; margin: 15px block; width: 80%; max-width: 300px; border-radius: 5px; border: none; display: inline-block; }
+        select, input, button { font-size: 16px; padding: 12px; margin: 15px auto; width: 80%; max-width: 300px; border-radius: 5px; border: none; display: inline-block; }
         button { background: #e74c3c; color: white; cursor: pointer; font-weight: bold; text-transform: uppercase; }
         button:hover { background: #c0392b; }
         #status { font-weight: bold; color: #f1c40f; margin-top: 25px; font-size: 18px; }
+        .error-box { background: #000; color: #ff7675; padding: 10px; border-radius: 5px; margin-top: 15px; font-family: monospace; display: none; text-align: left; }
     </style>
 </head>
 <body>
@@ -33,8 +33,22 @@
             <button onclick="processRom()">Extract and Package Assets</button>
         </div>
         
-        <div id="status">System Status: Ready. Please upload your game ROM.</div>
+        <div id="status">System Status: Preparing background network frameworks...</div>
+        <div id="error-box" class="error-box"></div>
     </div>
+
+    <!-- Injecting external dependencies with fallback tracking hooks -->
+    <script>
+        window.addEventListener('error', function(e) {
+            if (e.target.tagName === 'SCRIPT') {
+                const box = document.getElementById('error-box');
+                box.style.display = 'block';
+                box.innerText = "⚠️ NETWORK BLOCK:\nFailed to download core WebAssembly frameworks. Your network firewall or connection is blocking access to CDN infrastructure.";
+            }
+        }, true);
+    </script>
+    <script async src="https://jsdelivr.net" onload="document.getElementById('status').innerText='System Status: Pyodide Core Active. Waiting for JSZip...';"></script>
+    <script async src="https://cloudflare.com" onload="document.getElementById('status').innerText='System Status: Ready. Please upload your game ROM.';"></script>
 
     <script>
         async function processRom() {
@@ -42,6 +56,9 @@
             const game = document.getElementById('game-select').value;
             const status = document.getElementById('status');
             
+            if (typeof loadPyodide === 'undefined' || typeof JSZip === 'undefined') {
+                return alert("Core libraries haven't finished loading yet. Verify your internet connection isn't blocked.");
+            }
             if (input.files.length === 0) return alert("Please select a ROM file first!");
             
             status.innerText = "Status: Initializing internal WebAssembly Python environment...";
@@ -92,7 +109,10 @@
                     status.innerText = "Status: Extraction Complete! Drop unzipped folders directly onto phone storage path.";
                 });
             } catch (err) {
-                status.innerText = "CRITICAL ERROR: " + err;
+                status.innerText = "CRITICAL ERROR: See console logs.";
+                const box = document.getElementById('error-box');
+                box.style.display = 'block';
+                box.innerText = err;
             }
         }
     </script>
