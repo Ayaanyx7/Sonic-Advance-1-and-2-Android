@@ -1,4 +1,4 @@
-name: Build Sonic Advance 1 Android Port Engine Shell
+name: Build Sonic Advance Android Shell
 
 on:
   push:
