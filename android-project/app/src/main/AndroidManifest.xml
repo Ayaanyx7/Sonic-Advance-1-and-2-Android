@@ -70,6 +70,7 @@
          -->
      
         <activity android:name="SDLActivity"
+            package="com.ayaanyx7.sonicadvance1"
             android:label="@string/app_name"
             android:alwaysRetainTaskState="true"
             android:launchMode="singleInstance"
