@@ -29,13 +29,6 @@ ifeq ($(PLATFORM),gba)
     COMPARE := 1
   endif
 
-  # don't use dkP's base_tools anymore
-  # because the redefinition of $(CC) conflicts
-  # with when we want to use $(CC) to preprocess files
-  # thus, manually create the variables for the bin
-  # files, or use arm-none-eabi binaries on the system
-  # if dkP is not installed on this system
-
   ifneq (,$(TOOLCHAIN))
     ifneq ($(wildcard $(TOOLCHAIN)/bin),)
 	  export PATH := $(TOOLCHAIN)/bin:$(PATH)
@@ -43,6 +36,13 @@ ifeq ($(PLATFORM),gba)
   endif
 
   PREFIX := arm-none-eabi-
+# ANDROID (NDK, arm64)
+else ifeq ($(PLATFORM),android)
+  ANDROID_NDK_HOME ?= $(ANDROID_NDK_ROOT)
+  ANDROID_API      ?= 24
+  ANDROID_TOOLCHAIN := $(ANDROID_NDK_HOME)/toolchains/llvm/prebuilt/linux-x86_64/bin
+  export PATH := $(ANDROID_TOOLCHAIN):$(PATH)
+  PREFIX := aarch64-linux-android$(ANDROID_API)-
 # x86
 else ifeq ($(CPU_ARCH),i386)
   ifeq ($(PLATFORM),sdl_win32)
@@ -80,16 +80,27 @@ SHA1 	  := $(shell { command -v sha1sum || command -v shasum; } 2>/dev/null) -c
 ifeq ($(PLATFORM),gba)
 CC1       := tools/agbcc/bin/agbcc$(EXE)
 CC1_OLD   := tools/agbcc/bin/old_agbcc$(EXE)
+else ifeq ($(PLATFORM),android)
+CC1       := $(PREFIX)clang$(EXE)
+CXX       := $(PREFIX)clang++$(EXE)
+CC1_OLD   := $(CC1)
 else
 CC1       := $(PREFIX)gcc$(EXE)
 CXX       := $(PREFIX)g++$(EXE)
 CC1_OLD   := $(CC1)
 endif
 
+ifeq ($(PLATFORM),android)
+CPP       := $(CC1) -E
+LD        := $(CC1)
+OBJCOPY   := $(PREFIX)objcopy
+AS        := $(PREFIX)clang
+else
 CPP       := $(PREFIX)cpp
 LD        := $(PREFIX)ld
 OBJCOPY   := $(PREFIX)objcopy
 AS 		  := $(PREFIX)as
+endif
 
 FORMAT    := clang-format-13
 
@@ -116,6 +127,11 @@ SDL_MINGW_LIB     := $(SDL_MINGW_PKG)/lib
 SDL_MINGW_FLAGS   := -I$(SDL_MINGW_INCLUDE) -D_THREAD_SAFE
 SDL_MINGW_LIBS    := -L$(SDL_MINGW_LIB) -lSDL2main -lSDL2.dll
 
+# For Android, SDL2 headers/libs come from the android-project template's
+# own vendored SDL2 source (app/jni/SDL), not a system package.
+ANDROID_SDL_DIR   := android-project/app/jni/SDL
+ANDROID_SDL_FLAGS := -I$(ANDROID_SDL_DIR)/include
+
 LIBABGSYSCALL_LIBS := -L$(ROOT_DIR)/libagbsyscall/build/$(PLATFORM) -lagbsyscall
 
 ### FILES ###
@@ -129,6 +145,10 @@ else ifeq ($(PLATFORM),sdl)
 ROM      := $(BUILD_NAME).sdl
 ELF      := $(ROM).elf
 MAP      := $(ROM).map
+else ifeq ($(PLATFORM),android)
+ROM      := lib$(BUILD_NAME).so
+ELF      := $(ROM)
+MAP      := $(BUILD_NAME).android.map
 else ifeq ($(PLATFORM),sdl_psp)
 ROM      := EBOOT.PBP
 ELF      := $(BUILD_NAME).sdl_psp.elf
@@ -139,7 +159,7 @@ ELF      := $(ROM:.iso=.elf)
 MAP      := $(ROM:.iso=.map)
 else
 ROM      := $(BUILD_NAME).$(PLATFORM).exe
-ELF      := $(ROM:.exe=.elf)
+ELF      := $(ROM:.exe=.exe)
 MAP      := $(ROM:.exe=.map)
 endif
 
@@ -181,6 +201,8 @@ ifeq ($(PLATFORM),gba)
 C_SRCS_IN := $(shell find $(C_SUBDIR) -name "*.c" $(C_SRC_IGNORE_PATHS) -not -path "*/platform/*")
 else ifeq ($(PLATFORM),sdl)
 C_SRCS_IN := $(shell find $(C_SUBDIR) -name "*.c" $(C_SRC_IGNORE_PATHS) -not -path "*/platform/win32/*" -not -path "*/platform/ps2/*")
+else ifeq ($(PLATFORM),android)
+C_SRCS_IN := $(shell find $(C_SUBDIR) -name "*.c" $(C_SRC_IGNORE_PATHS) -not -path "*/platform/win32/*" -not -path "*/platform/ps2/*" -not -path "*/platform/sdl_psp/*")
 else ifeq ($(PLATFORM),sdl_psp)
 C_SRCS_IN := $(shell find $(C_SUBDIR) -name "*.c" $(C_SRC_IGNORE_PATHS) -not -path "*/platform/win32/*" -not -path "*/platform/ps2/*")
 else ifeq ($(PLATFORM),ps2)
@@ -204,7 +226,6 @@ endif
 
 CXX_OBJS := $(patsubst $(C_SUBDIR)/%.cc,$(C_BUILDDIR)/%.o,$(CXX_SRCS))
 
-# Platform not included as we only need the headers for decomp scratches
 C_HEADERS := $(shell find $(INCLUDE_DIRS) -name "*.h" -not -path "*/sa1/*" -not -path "*/platform/*")
 
 ifeq ($(PLATFORM),gba)
@@ -235,9 +256,6 @@ FORMAT_H_PATHS   := $(shell find . -name "*.h" ! -path '*/build/*' ! -path '*/ex
 
 ### COMPILER FLAGS ###
 
-# -P disables line markers (don't EVER use this, if you want proper debug info!)
-# -I sets an include path
-# -D defines a symbol
 CPPFLAGS ?= $(INCLUDE_CPP_ARGS) -D $(GAME_REGION) -D GAME=$(GAME)
 CC1FLAGS ?= -Wimplicit -Wparentheses -Werror
 
@@ -245,16 +263,12 @@ ifneq ($(GAME_VARIANT), DEFAULT)
 	CPPFLAGS += -D $(GAME_VARIANT)
 endif
 
-# These have to(?) be defined this way, because
-# the C-preprocessor cannot resolve stuff like:
-# #if (PLATFORM == gba), where PLATFORM is defined via -D.
 ifeq ($(PLATFORM),gba)
 	INCLUDE_SCANINC_ARGS += -I tools/agbcc/include
 	CPPFLAGS += -D PLATFORM_GBA=1 -D PLATFORM_SDL=0 -D PLATFORM_WIN32=0 -D CPU_ARCH_X86=0 -D CPU_ARCH_ARM=1 -nostdinc -I tools/agbcc/include
 	CC1FLAGS += -fhex-asm
 
 ifeq ($(GAME_NAME), sa1)
-    # It seems this bug was introduced to GCC after SA1 released.
     PROLOGUE_FIX := -fprologue-bugfix
 endif # BUILD_NAME == sa1
 
@@ -263,6 +277,9 @@ else
 	ifeq ($(PLATFORM),sdl)
 		CC1FLAGS += -Wno-parentheses-equality -Wno-unused-value
 		CPPFLAGS += -D TITLE_BAR=$(BUILD_NAME).$(PLATFORM) -D PLATFORM_GBA=0 -D PLATFORM_SDL=1 -D PLATFORM_WIN32=0 $(shell sdl2-config --cflags)
+	else ifeq ($(PLATFORM),android)
+		CC1FLAGS += -Wno-parentheses-equality -Wno-unused-value -fPIC
+		CPPFLAGS += -D PLATFORM_GBA=0 -D PLATFORM_SDL=1 -D PLATFORM_WIN32=0 -D ANDROID -D __ANDROID__ $(ANDROID_SDL_FLAGS) --target=aarch64-linux-android$(ANDROID_API) --sysroot=$(ANDROID_NDK_HOME)/toolchains/llvm/prebuilt/linux-x86_64/sysroot
 	else ifeq ($(PLATFORM),sdl_psp)
 		CC1FLAGS += -G0
 		CPPFLAGS += -D PLATFORM_GBA=0 -D PLATFORM_SDL=1 -D PLATFORM_WIN32=0 -D SDL_MAIN_HANDLED -I$(PSPDEV)/psp/include/SDL2 -I$(PSPDEV)/psp/include -I$(PSPSDK)/include -D_PSP_FW_VERSION=600
@@ -277,8 +294,6 @@ else
 
 	ifeq ($(CPU_ARCH),i386)
         CPPFLAGS += -D CPU_ARCH_X86=1 -D CPU_ARCH_ARM=0
-
-        # Use the more legible Intel dialect for x86, without underscores
         CC1FLAGS += -masm=intel
 	else 
         CPPFLAGS += -D CPU_ARCH_X86=0 -D CPU_ARCH_ARM=0
@@ -290,7 +305,6 @@ ifeq ($(DEBUG),1)
   CPPFLAGS += -D DEBUG=1
 else
   ifeq ($(PLATFORM),sdl_psp)
-    # -O3 for PSP (Allegrex MIPS, small D-cache)
     CC1FLAGS += -O3 -funroll-loops -fomit-frame-pointer
   else ifeq ($(PLATFORM),ps2)
     CC1FLAGS += -O3 -fomit-frame-pointer
@@ -312,11 +326,6 @@ else
   CPPFLAGS += -D TAS_TESTING=0
 endif
 
-ifeq ($(NON_MATCHING),1)
-# TODO: We use "#if(n)def NON_MATCHING a lot, maybe we should switch to "#if (!)NON_MATCHING"
-#    CPPFLAGS += -D NON_MATCHING=1
-endif
-
 ifeq ($(ENABLE_DECOMP_CREDITS),0)
   CPPFLAGS += -D ENABLE_DECOMP_CREDITS=0
 else
@@ -330,41 +339,43 @@ ifeq ($(PLATFORM),gba)
   CC1FLAGS += -mthumb-interwork
 else
   ifeq ($(PLATFORM), sdl)
-    # for modern we are using a modern compiler
-    # so instead of CPP we can use gcc -E to "preprocess only"
     CPP := $(CC1) -E
+  else ifeq ($(PLATFORM), android)
+    CPP := $(CC1) -E --target=aarch64-linux-android$(ANDROID_API) --sysroot=$(ANDROID_NDK_HOME)/toolchains/llvm/prebuilt/linux-x86_64/sysroot
   else ifeq ($(PLATFORM), sdl_psp)
     CPP := $(CC1) -E
   else ifeq ($(PLATFORM), ps2)
     ASFLAGS  += -msingle-float
   endif
-  # Allow file input through stdin on modern gcc/g++ and set it to "compile only"
   CC1FLAGS += -x c -S
   CXXFLAGS += -x c++ -S
 endif
 
 ### LINKER FLAGS ###
 
-# GBA
 ifeq ($(PLATFORM),gba)
     MAP_FLAG := -Map
-# Native
 else ifeq ($(PLATFORM),sdl)
     ifeq ($(OS), Darwin)
         MAP_FLAG := -Wl,-map,
     else
         MAP_FLAG := -Xlinker -Map=
     endif
-# Win32, PSP, PS2
+else ifeq ($(PLATFORM),android)
+    MAP_FLAG := -Xlinker -Map=
 else
     MAP_FLAG := -Xlinker -Map=
 endif
 
-# Libs
 ifeq ($(PLATFORM),gba)
     LIBS := $(ROOT_DIR)/tools/agbcc/lib/libgcc.a $(ROOT_DIR)/tools/agbcc/lib/libc.a $(LIBABGSYSCALL_LIBS)
 else ifeq ($(PLATFORM),sdl)
     LIBS := $(shell sdl2-config --cflags --libs) $(LIBABGSYSCALL_LIBS) -lm
+else ifeq ($(PLATFORM),android)
+    LIBS := --target=aarch64-linux-android$(ANDROID_API) --sysroot=$(ANDROID_NDK_HOME)/toolchains/llvm/prebuilt/linux-x86_64/sysroot \
+            -shared -uANativeActivity_onCreate \
+            -L$(ANDROID_SDL_DIR)/build/intermediates -lSDL2 -llog -landroid \
+            $(LIBABGSYSCALL_LIBS) -lm
 else ifeq ($(PLATFORM),sdl_psp)
     LIBS := -L$(PSPDEV)/psp/lib $(LIBABGSYSCALL_LIBS) -L$(PSPSDK)/lib -lSDL2 -lm -lGL -lpspvram -lpspaudio -lpspvfpu -lpspdisplay -lpspgu -lpspge -lpsphprm -lpspctrl -lpsppower -lpspdebug -lpspnet -lpspnet_apctl -Wl,-zmax-page-size=128
 else ifeq ($(PLATFORM),ps2)
@@ -377,22 +388,14 @@ endif
 
 #### MAIN TARGETS ####
 
-# these commands will run regardless of deps being completed
 .PHONY: clean tools tidy clean-tools $(TOOLDIRS) libagbsyscall ps2 sa1
 
-# Ensure required directories exist
 $(shell mkdir -p $(C_BUILDDIR) $(ASM_BUILDDIR) $(DATA_ASM_BUILDDIR) $(SOUND_ASM_BUILDDIR) $(SONG_BUILDDIR) $(MID_BUILDDIR))
 
-# a special command which ensures that stdout and stderr
-# get printed instead of output into the makefile
 infoshell = $(foreach line, $(shell $1 | sed "s/ /__SPACE__/g"), $(info $(subst __SPACE__, ,$(line))))
 
-# Build tools when building the rom
-# Disable dependency scanning for clean/tidy/tools
 ifeq (,$(filter-out all rom compare libagbsyscall,$(MAKECMDGOALS)))
-# if we are doing any of these things, build tools first
 $(call infoshell, $(MAKE) tools)
-# ensure that tools did build
 MAKE_TOOLS_OUTCOME=$(shell $(MAKE) tools > /dev/null 2>&1 && echo 0 || echo 1)
 ifneq ($(MAKE_TOOLS_OUTCOME),0)
   $(error Make tools command failed!)
@@ -401,25 +404,13 @@ else
 NODEP ?= 1
 endif
 
-# When not building tools, we should specify this
 ifneq ($(NODEP),1)
-# MacOS refuses to link the songs data because some pointers
-# are not aligned. The music player code reads pointers from raw
-# bytes, so they don't need to be aligned. But this is a simple
-# work around which tells the compiler not to care. Once we are
-# compiling the songs to C, we can cast the pointers to integers
-# which means the linker will not notice.
-#
-# TODO: compile songs to C so that we can work around this.
 export MACOSX_DEPLOYMENT_TARGET := 11
 endif
 
 ifeq ($(PLATFORM),gba)
-# Use the old compiler for m4a, as it was prebuilt and statically linked to the original codebase
-# PROLOGUE_FIX has to be set to nothing, since -fprologue-bugfix does not work with oldagbcc
 $(C_BUILDDIR)/lib/m4a/m4a.o: CC1 := $(CC1_OLD)
 $(C_BUILDDIR)/lib/m4a/m4a.o: PROLOGUE_FIX :=
-# Use `-O1` for agb_flash libs, as these were also prebuilt
 $(C_BUILDDIR)/lib/agb_flash/agb_flash.o:  CC1FLAGS := -O1 -mthumb-interwork -Werror
 $(C_BUILDDIR)/lib/agb_flash/agb_flash%.o: CC1FLAGS := -O1 -mthumb-interwork -Werror
 endif
@@ -463,7 +454,7 @@ clean-tools:
 tidy:
 	$(RM) -r build/*
 	$(RM) SDL2.dll
-	$(RM) $(BUILD_NAME)*.exe $(BUILD_NAME)*.elf $(BUILD_NAME)*.map $(BUILD_NAME)*.sdl $(BUILD_NAME)*.gba $(BUILD_NAME)*.iso
+	$(RM) $(BUILD_NAME)*.exe $(BUILD_NAME)*.elf $(BUILD_NAME)*.map $(BUILD_NAME)*.sdl $(BUILD_NAME)*.gba $(BUILD_NAME)*.iso $(BUILD_NAME)*.so
 	$(RM) EBOOT.PBP PARAM.SFO
 
 usa_beta: ; @$(MAKE) GAME_REGION=USA GAME_VARIANT=BETA
@@ -475,6 +466,8 @@ japan_vc: ; @$(MAKE) GAME_REGION=JAPAN GAME_VARIANT=VIRTUAL_CONSOLE
 europe: ; @$(MAKE) GAME_REGION=EUROPE
 
 sdl: ; @$(MAKE) PLATFORM=sdl
+
+android: ; @$(MAKE) PLATFORM=android
 
 sdl_psp: ; @$(MAKE) PLATFORM=sdl_psp
 
@@ -550,6 +543,8 @@ else ifeq ($(PLATFORM),win32)
 	$(OBJCOPY) -O pei-x86-64 $< $@
 else ifeq ($(PLATFORM),sdl)
 	cp $< $@
+else ifeq ($(PLATFORM),android)
+	cp $< $@
 else ifeq ($(PLATFORM),sdl_psp)
 	@echo Creating $(ROM) from $(ELF)
 	@psp-fixup-imports $<
@@ -567,12 +562,11 @@ else
 	$(OBJCOPY) -O pei-x86-64 $< $@
 endif
 
-# Build c sources, and ensure alignment
 $(C_BUILDDIR)/%.o: $(C_SUBDIR)/%.c
 	@echo "$(CC1) <flags> -o $@ $<"
 	@$(shell mkdir -p $(shell dirname '$(C_BUILDDIR)/$*.i'))
 	@$(CPP) $(CPPFLAGS) $< -o $(C_BUILDDIR)/$*.i
-	@$(PREPROC) $(C_BUILDDIR)/$*.i $(PLATFORM) "" | $(CC1) $(PROLOGUE_FIX) $(CC1FLAGS) -o $(C_BUILDDIR)/$*.s -
+	@$(PREPROC) $(C_BUILDDIR)/$*.i $(if $(filter android,$(PLATFORM)),sdl,$(PLATFORM)) "" | $(CC1) $(PROLOGUE_FIX) $(CC1FLAGS) -o $(C_BUILDDIR)/$*.s -
 ifeq ($(PLATFORM), gba)
 	@printf ".text\n\t.align\t2, 0\n" >> $(C_BUILDDIR)/$*.s
 endif
@@ -584,7 +578,6 @@ $(C_BUILDDIR)/%.o: $(C_SUBDIR)/%.cc
 	@$(CXX) $(CXXFLAGS) -o $(C_BUILDDIR)/$*.s $<
 	@$(AS) $(ASFLAGS) $(C_BUILDDIR)/$*.s -o $@
 
-# Scan the src dependencies to determine if any dependent files have changed
 $(C_BUILDDIR)/%.d: $(C_SUBDIR)/%.c
 	@$(shell mkdir -p $(shell dirname '$(C_BUILDDIR)/$*.d'))
 	$(SCANINC) -M $@ $(INCLUDE_SCANINC_ARGS) $<
@@ -593,7 +586,6 @@ $(C_BUILDDIR)/%.d: $(C_SUBDIR)/%.cc
 	@$(shell mkdir -p $(shell dirname '$(C_BUILDDIR)/$*.d'))
 	$(SCANINC) -M $@ $(INCLUDE_SCANINC_ARGS) $<
 
-# rule for sources from the src dir (parts of libraries)
 $(C_BUILDDIR)/%.o: $(C_SUBDIR)/%.s
 	@echo "$(AS) <flags> -o $@ $<"
 	@$(AS) $(ASFLAGS) -o $@ $<
@@ -604,9 +596,8 @@ $(ASM_BUILDDIR)/%.o: $(ASM_SUBDIR)/%.s
 
 $(DATA_ASM_BUILDDIR)/%.o: $(DATA_ASM_SUBDIR)/%.s
 	@echo "$(AS) <flags> -o $@ $<"
-	@$(PREPROC) $< $(PLATFORM) "" | $(CPP) $(CPPFLAGS) - | $(AS) $(ASFLAGS) -o $@ -
+	@$(PREPROC) $< $(if $(filter android,$(PLATFORM)),sdl,$(PLATFORM)) "" | $(CPP) $(CPPFLAGS) - | $(AS) $(ASFLAGS) -o $@ -
 
-# Scan the ASM data dependencies to determine if any .inc files have changed
 $(DATA_ASM_BUILDDIR)/%.d: $(DATA_ASM_SUBDIR)/%.s
 	$(SCANINC) -M $@ $(INCLUDE_SCANINC_ARGS) $<
     
@@ -618,7 +609,7 @@ endif
 
 $(SONG_BUILDDIR)/%.o: $(SONG_SUBDIR)/%.s
 	@echo "$(AS) <flags> -o $@ $<"
-	@$(PREPROC) $< $(PLATFORM) "" | $(CPP) $(CPPFLAGS) - | $(AS) $(ASFLAGS) -o $@ -
+	@$(PREPROC) $< $(if $(filter android,$(PLATFORM)),sdl,$(PLATFORM)) "" | $(CPP) $(CPPFLAGS) - | $(AS) $(ASFLAGS) -o $@ -
 
 ### SUB-PROGRAMS ###
 
@@ -633,8 +624,6 @@ endif
 chao_garden: tools
 	@$(MAKE) -C chao_garden DEBUG=0
     
-# Dependency here is already explicit, but we sometimes get a race condition if this
-# is not specified
 multi_boot/subgame_bootstrap/subgame_bootstrap.gba: multi_boot/programs/subgame_loader/subgame_loader.bin
 ifeq ($(PLATFORM), gba)
 	@$(MAKE) -C multi_boot/subgame_bootstrap DEBUG=0
