@@ -109,6 +109,12 @@ ifneq ($(PLATFORM),gba)
     endif
 endif # PLATFORM != gba
 
+ifeq ($(PLATFORM),android)
+        CC1     := $(PREFIX)clang
+        CPP     := $(CC1) -E
+        LD      := $(CC1)
+        CC1FLAGS += --target=aarch64-linux-android$(ANDROID_API) --sysroot=$(ANDROID_NDK_HOME)/toolchains/llvm/prebuilt/linux-x86_64/sysroot -fPIC
+    endif
 
 ifeq ($(CPU_ARCH),arm)
 ifeq ($(PLATFORM),gba)
