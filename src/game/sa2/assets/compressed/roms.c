@@ -2,25 +2,25 @@
 #include "game/sa2/assets/compressed/roms.h"
 
 #ifdef __ANDROID__
+  // We use assembly to create the exact global array identifier the header expects, 
+  // then embed the file data directly into it.
   #ifdef JAPAN
     __asm__(
         ".section .rodata\n"
+        ".global gMultiBootProgram_TinyChaoGarden\n"
         ".align 2\n"
-        "__asset_binary_ref__:\n"
+        "gMultiBootProgram_TinyChaoGarden:\n"
         ".incbin \"data/sa2/mb_chao_garden_japan.gba.lz\"\n"
     );
   #else
     __asm__(
         ".section .rodata\n"
+        ".global gMultiBootProgram_TinyChaoGarden\n"
         ".align 2\n"
-        "__asset_binary_ref__:\n"
+        "gMultiBootProgram_TinyChaoGarden:\n"
         ".incbin \"chao_garden/mb_chao_garden.gba.lz\"\n"
     );
   #endif
-
-  extern const u8 __asset_binary_ref__[];
-  const u8 *const gMultiBootProgram_TinyChaoGarden = __asset_binary_ref__;
-
 #else
   // Original GBA toolchain behaviors left entirely intact
   #ifdef JAPAN
