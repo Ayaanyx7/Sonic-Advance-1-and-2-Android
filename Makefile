@@ -568,7 +568,7 @@ $(C_BUILDDIR)/%.o: $(C_SUBDIR)/%.c
 	@$(shell mkdir -p $(shell dirname '$(C_BUILDDIR)/$*.i'))
 	@$(CPP) $(CPPFLAGS) $< -o $(C_BUILDDIR)/$*.i
 ifeq ($(PLATFORM),android)
-	@$(CC1) -c $(CC1FLAGS) $(CPPFLAGS) $< -o $@
+	$(CC1) -c $(CC1FLAGS) -DWORKSPACE_ROOT=$(ROOT_DIR) -o $@ $<
 else
 	@$(PREPROC) $(C_BUILDDIR)/$*.i $(PLATFORM) "" | $(CC1) $(PROLOGUE_FIX) $(CC1FLAGS) -o $(C_BUILDDIR)/$*.s -
 ifeq ($(PLATFORM), gba)
