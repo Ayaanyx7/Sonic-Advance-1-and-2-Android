@@ -345,5 +345,12 @@ extern void *iwram_end;
 extern void *ewram_end;
 
 extern void *rom_footer;
+#ifdef __ANDROID__
+  #ifndef INCPAL
+    // Replicates preproc's exact runtime replacement behavior natively via Clang
+    #define __STR_VAL__(...) #__VA_ARGS__
+    #define INCPAL(...) { #include __STR_VAL__(__VA_ARGS__) }
+  #endif
+#endif
 
 #endif // GUARD_GLOBAL_H
