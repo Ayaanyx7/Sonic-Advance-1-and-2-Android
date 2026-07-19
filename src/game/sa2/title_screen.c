@@ -247,7 +247,20 @@ static const TileInfo sMenuTiles[] = {
     { 0x28, SA2_ANIM_SOME_JAPANESE_TXT, SA2_ANIM_VARIANT_SOME_JAPANESE_TXT_7 },
 };
 
-static const ColorRaw sWavesBrightnessPalette[] = INCPAL("graphics/sa2/title_screen__waves_brightness.pal");
+#ifdef __ANDROID__
+  // Safely embeds the raw graphic numbers as global binary data
+  __asm__(
+      ".section .rodata\n"
+      ".align 2\n"
+      "__asset_palette_ref__:\n"
+      ".incbin \"graphics/sa2/title_screen__waves_brightness.pal\"\n"
+  );
+  extern const ColorRaw __asset_palette_ref__[];
+  static const ColorRaw *const sWavesBrightnessPalette = __asset_palette_ref__;
+#else
+  // Leaves the original GBA compilation pipeline completely pristine
+  static const ColorRaw sWavesBrightnessPalette[] = INCPAL("graphics/sa2/title_screen__waves_brightness.pal");
+#endif
 
 // Each value is scan line which the brightness should be increased
 // 0 being top 160 being bottom
