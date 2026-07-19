@@ -1,21 +1,28 @@
-name: Test Android Native Build
+name: Build Sonic Advance 2 Android APK
 
 on:
   workflow_dispatch:
 
 jobs:
-  test-build:
+  build-apk:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install build dependencies
+      - name: Set up Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install Native Host Build Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libpng-dev xorg-dev libsdl2-dev
 
-      - name: Set up Android NDK
+      # Setting up Android SDK & NDK environments
+      - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
       - name: Install NDK
@@ -24,24 +31,24 @@ jobs:
           sdkmanager "ndk;26.1.10909125"
           echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/26.1.10909125" >> $GITHUB_ENV
 
-      - name: Attempt native Android build
+      # STAGE 1: Run your Makefile rule to generate assets and libagbsyscall
+      - name: Compile Game Assets and Native Tools
         run: |
-          echo "Looking for task.c..."
-          find . -name task.c
+          make android GAME_NAME=sa2 GAME_REGION=USA
 
-          echo "Looking for task.o..."
-          find build -name task.o || true
+      # STAGE 2: Pass everything to Gradle to package the APK
+      - name: Make Gradle Wrapper Executable
+        run: chmod +x android-project/gradlew
+        continue-on-error: true
 
-          echo "Looking for sprite.o..."
-          find build -name sprite.o || true
+      - name: Package Android APK via Gradle
+        working-directory: ./android-project
+        run: |
+          ./gradlew assembleDebug
 
-          echo "Looking for debug_text_printer.o..."
-          find build -name debug_text_printer.o || true
-          make android GAME_NAME=sa2 GAME_REGION=USA 2>&1 | tee build_log.txt
-
-      - name: Upload build log regardless of outcome
-        if: always()
+      # STAGE 3: Extract the finished installation file out of GitHub Actions
+      - name: Upload Completed Installable APK
         uses: actions/upload-artifact@v4
         with:
-          name: android-build-log
-          path: build_log.txt
+          name: sonic-advance-2-debug-apk
+          path: android-project/app/build/outputs/apk/debug/*.apk
