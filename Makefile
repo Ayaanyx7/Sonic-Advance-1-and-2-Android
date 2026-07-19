@@ -94,7 +94,7 @@ ifeq ($(PLATFORM),android)
 CPP       := $(CC1) -E
 LD        := $(CC1)
 OBJCOPY   := $(PREFIX)objcopy
-AS        := $(PREFIX)clang
+AS        := $(CC1)
 else
 CPP       := $(PREFIX)cpp
 LD        := $(PREFIX)ld
