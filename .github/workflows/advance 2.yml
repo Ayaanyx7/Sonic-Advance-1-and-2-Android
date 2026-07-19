@@ -30,8 +30,8 @@ jobs:
           sdkmanager "ndk;26.1.10909125"
           echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/26.1.10909125" >> $GITHUB_ENV
 
-       - name: Pre-build stub Chao Garden asset (placeholder, non-GBA platforms only)
-         run: |
+      - name: Pre-build stub Chao Garden asset (placeholder, non-GBA platforms only)
+        run: |
           make PLATFORM=android chao_garden/mb_chao_garden.gba.lz
       # STAGE 1: Run your Makefile rule to generate assets and libagbsyscall
       - name: Compile Game Assets and Native Tools
