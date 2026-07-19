@@ -95,7 +95,6 @@ CPP       := $(CC1) -E
 LD        := $(CC1) -shared
 OBJCOPY   := $(PREFIX)objcopy
 AS        := $(CC1)
-CC1FLAGS  += -DINCPAL\(x\)=\(const\ ColorRaw\*\)u\#\#x
 else
 CPP       := $(PREFIX)cpp
 LD        := $(PREFIX)ld
