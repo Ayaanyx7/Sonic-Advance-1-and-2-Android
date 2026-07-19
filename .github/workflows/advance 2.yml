@@ -26,6 +26,17 @@ jobs:
 
       - name: Attempt native Android build
         run: |
+          echo "Looking for task.c..."
+          find . -name task.c
+
+          echo "Looking for task.o..."
+          find build -name task.o || true
+
+          echo "Looking for sprite.o..."
+          find build -name sprite.o || true
+
+          echo "Looking for debug_text_printer.o..."
+          find build -name debug_text_printer.o || true
           make android GAME_NAME=sa2 GAME_REGION=USA 2>&1 | tee build_log.txt
 
       - name: Upload build log regardless of outcome
