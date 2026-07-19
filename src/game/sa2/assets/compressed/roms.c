@@ -1,16 +1,18 @@
 #include "global.h"
 #include "game/sa2/assets/compressed/roms.h"
 
+// Macro helper to safely stringify macro definitions passed by the Makefile
+#define ASSET_STRING_GLUE(x) #x
+#define ASSET_PATH(dir, file) ASSET_STRING_GLUE(dir/file)
+
 #ifdef __ANDROID__
-  // We use assembly to create the exact global array identifier the header expects, 
-  // then embed the file data directly into it.
   #ifdef JAPAN
     __asm__(
         ".section .rodata\n"
         ".global gMultiBootProgram_TinyChaoGarden\n"
         ".align 2\n"
         "gMultiBootProgram_TinyChaoGarden:\n"
-        ".incbin \"data/sa2/mb_chao_garden_japan.gba.lz\"\n"
+        ".incbin " ASSET_PATH(WORKSPACE_ROOT, data/sa2/mb_chao_garden_japan.gba.lz) "\n"
     );
   #else
     __asm__(
@@ -18,7 +20,7 @@
         ".global gMultiBootProgram_TinyChaoGarden\n"
         ".align 2\n"
         "gMultiBootProgram_TinyChaoGarden:\n"
-        ".incbin \"chao_garden/mb_chao_garden.gba.lz\"\n"
+        ".incbin " ASSET_PATH(WORKSPACE_ROOT, chao_garden/mb_chao_garden.gba.lz) "\n"
     );
   #endif
 #else
