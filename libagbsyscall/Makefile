@@ -201,5 +201,5 @@ $(OBJS): $(SRCS)
 	$(AS) $(ASFLAGS) --defsym L_$(*F)=1 -o $@ $<
 else
 $(OBJS): $(SRCS)
-	$(CPP) $(CPPFLAGS) -D L_$(*F)=1 $< | $(CC1) $(CC1FLAGS) -o $*.s - && $(AS) $(ASFLAGS) -o $@ $*.s
+	$(CPP) $(CPPFLAGS) -D L_$(*F)=1 $< | $(CC1) $(CC1FLAGS) -o $*.s - && $(AS) $(ASFLAGS) -c $*.s -o $@
 endif
