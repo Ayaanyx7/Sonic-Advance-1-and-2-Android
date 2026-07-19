@@ -348,11 +348,20 @@ extern void *rom_footer;
 
 #ifdef __ANDROID__
   #ifndef INCPAL
-    // A clever preprocessor trick to safely generate an inline file include
-    #define __GLUE__(a, b) a ## b
-    #define __JOIN__(a, b) __GLUE__(a, b)
-    #define __STR_VAL__(...) #__VA_ARGS__
-    #define INCPAL(...) { __JOIN__(#, include) __STR_VAL__(__VA_ARGS__) }
+    // Uses Clang's inline assembly to load the raw binary asset directly into memory
+    #define INCPAL(path) \
+    ({ \
+        __asm__ ( \
+            ".section .rodata\n" \
+            ".align 2\n" \
+            "__asset_start:\n" \
+            ".incbin \"" path "\"\n" \
+            "__asset_end:\n" \
+            ".previous\n" \
+        ); \
+        extern const ColorRaw __asset_start[]; \
+        __asset_start; \
+    })
   #endif
 #endif
 
