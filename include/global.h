@@ -348,9 +348,11 @@ extern void *rom_footer;
 
 #ifdef __ANDROID__
   #ifndef INCPAL
-    // Replicates preproc's exact runtime replacement behavior natively via Clang
+    // A clever preprocessor trick to safely generate an inline file include
+    #define __GLUE__(a, b) a ## b
+    #define __JOIN__(a, b) __GLUE__(a, b)
     #define __STR_VAL__(...) #__VA_ARGS__
-    #define INCPAL(...) { #include __STR_VAL__(__VA_ARGS__) }
+    #define INCPAL(...) { __JOIN__(#, include) __STR_VAL__(__VA_ARGS__) }
   #endif
 #endif
 
