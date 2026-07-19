@@ -346,27 +346,4 @@ extern void *ewram_end;
 
 extern void *rom_footer;
 
-#ifdef __ANDROID__
-  // Wipe out any broken macro wrappers from the build system config
-  #undef INCPAL
-  #undef INCBIN
-  #undef INCBIN_U8
-  #undef INCBIN_U16
-  #undef INCBIN_U32
-  #undef INCBIN_S8
-  #undef INCBIN_S16
-  #undef INCBIN_S32
-
-  // Force all asset macros to resolve to a neutral external pointer reference 
-  // that Clang accepts at global file scope.
-  #define INCPAL(path)     __asset_palette_ref__
-  #define INCBIN(...)      __asset_binary_ref__
-  #define INCBIN_U8(...)   __asset_binary_ref__
-  #define INCBIN_U16(...)  __asset_binary_ref__
-  #define INCBIN_U32(...)  __asset_binary_ref__
-  #define INCBIN_S8(...)   __asset_binary_ref__
-  #define INCBIN_S16(...)  __asset_binary_ref__
-  #define INCBIN_S32(...)  __asset_binary_ref__
-#endif
-
 #endif // GUARD_GLOBAL_H
