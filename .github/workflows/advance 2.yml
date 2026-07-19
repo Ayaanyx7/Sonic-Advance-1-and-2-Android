@@ -32,6 +32,7 @@ jobs:
 
       - name: Pre-build stub Chao Garden asset (placeholder, non-GBA platforms only)
         run: |
+          make tools
           make PLATFORM=android chao_garden/mb_chao_garden.gba.lz
       # STAGE 1: Run your Makefile rule to generate assets and libagbsyscall
       - name: Compile Game Assets and Native Tools
