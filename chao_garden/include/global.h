@@ -30,9 +30,17 @@
         asm(".include " #path);                                                                                                            \
         if (0)
 #define END_NONMATCH }
+#endif /// IDE support
+
+#ifdef __ANDROID__
+  // Undefine the broken macro passed by the Makefile flag
+  #undef INCPAL
+  
+  // Implement the proper Clang asset include wrapper
+  #define __STR_VAL__(...) #__VA_ARGS__
+  #define INCPAL(...) { #include __STR_VAL__(__VA_ARGS__) }
 #endif
 
-/// IDE support
 #if defined(__CYGWIN__) || defined(__INTELLISENSE__)
 // We define these when using certain IDEs to fool preproc
 #define _(x)  (x)
