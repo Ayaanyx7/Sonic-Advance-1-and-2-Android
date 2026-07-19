@@ -95,7 +95,7 @@ CPP       := $(CC1) -E
 LD        := $(CC1) -shared
 OBJCOPY   := $(PREFIX)objcopy
 AS        := $(CC1)
-CC1FLAGS  += -DINCPAL\(x\)=x
+CC1FLAGS  += -DINCPAL\(x\)=L\#\#x
 else
 CPP       := $(PREFIX)cpp
 LD        := $(PREFIX)ld
