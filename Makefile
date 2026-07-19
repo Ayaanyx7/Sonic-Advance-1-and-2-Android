@@ -92,7 +92,7 @@ endif
 
 ifeq ($(PLATFORM),android)
 CPP       := $(CC1) -E
-LD        := $(CC1)
+LD        := $(CC1) -shared
 OBJCOPY   := $(PREFIX)objcopy
 AS        := $(CC1)
 else
