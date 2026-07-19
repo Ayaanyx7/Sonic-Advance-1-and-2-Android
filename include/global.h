@@ -348,20 +348,8 @@ extern void *rom_footer;
 
 #ifdef __ANDROID__
   #ifndef INCPAL
-    // Uses Clang's inline assembly to load the raw binary asset directly into memory
-    #define INCPAL(path) \
-    ({ \
-        __asm__ ( \
-            ".section .rodata\n" \
-            ".align 2\n" \
-            "__asset_start:\n" \
-            ".incbin \"" path "\"\n" \
-            "__asset_end:\n" \
-            ".previous\n" \
-        ); \
-        extern const ColorRaw __asset_start[]; \
-        __asset_start; \
-    })
+    // Creates an external linkage symbol for the path rather than a text string
+    #define INCPAL(path) __asset_palette_ref__
   #endif
 #endif
 
