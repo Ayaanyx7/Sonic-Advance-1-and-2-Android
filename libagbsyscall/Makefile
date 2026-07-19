@@ -78,7 +78,11 @@ ifneq ($(MODERN),1)
 endif
 
 AS := $(PREFIX)as
+ifeq ($(PLATFORM),android)
+AR := llvm-ar
+else
 AR := $(PREFIX)ar
+endif
 
 ifneq ($(PLATFORM),gba)
     CPP       := $(PREFIX)cpp
