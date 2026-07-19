@@ -566,11 +566,15 @@ $(C_BUILDDIR)/%.o: $(C_SUBDIR)/%.c
 	@echo "$(CC1) <flags> -o $@ $<"
 	@$(shell mkdir -p $(shell dirname '$(C_BUILDDIR)/$*.i'))
 	@$(CPP) $(CPPFLAGS) $< -o $(C_BUILDDIR)/$*.i
-	@$(PREPROC) $(C_BUILDDIR)/$*.i $(if $(filter android,$(PLATFORM)),sdl,$(PLATFORM)) "" | $(CC1) -S $(PROLOGUE_FIX) $(CC1FLAGS) -o $(C_BUILDDIR)/$*.s -
+ifeq ($(PLATFORM),android)
+	@$(CC1) -c $(CC1FLAGS) $(CPPFLAGS) $< -o $@
+else
+	@$(PREPROC) $(C_BUILDDIR)/$*.i $(PLATFORM) "" | $(CC1) $(PROLOGUE_FIX) $(CC1FLAGS) -o $(C_BUILDDIR)/$*.s -
 ifeq ($(PLATFORM), gba)
 	@printf ".text\n\t.align\t2, 0\n" >> $(C_BUILDDIR)/$*.s
 endif
 	@$(AS) $(ASFLAGS) $(C_BUILDDIR)/$*.s -o $@
+endif
 
 $(C_BUILDDIR)/%.o: $(C_SUBDIR)/%.cc
 	@echo "$(CXX) <flags> -o $@ $<"
