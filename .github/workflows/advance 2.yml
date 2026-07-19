@@ -19,9 +19,7 @@ jobs:
       - name: Install Native Host Build Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libpng-dev xorg-dev libsdl2-dev gcc-arm-none-eabi binutils-arm-none-eabi
-
-
+          sudo apt-get install -y build-essential libpng-dev xorg-dev libsdl2-dev
       # Setting up Android SDK & NDK environments
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
@@ -31,16 +29,10 @@ jobs:
           yes | sdkmanager --licenses || true
           sdkmanager "ndk;26.1.10909125"
           echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/26.1.10909125" >> $GITHUB_ENV
-
-      - name: Chao Garden
-        run: |
-           make chao_garden
-           
       # STAGE 1: Run your Makefile rule to generate assets and libagbsyscall
       - name: Compile Game Assets and Native Tools
         run: |
           make android GAME_NAME=sa2 GAME_REGION=USA
-
       # STAGE 2: Pass everything to Gradle to package the APK
       - name: Make Gradle Wrapper Executable
         run: chmod +x android-project/gradlew
@@ -50,7 +42,6 @@ jobs:
         working-directory: ./android-project
         run: |
           ./gradlew assembleDebug
-
       # STAGE 3: Extract the finished installation file out of GitHub Actions
       - name: Upload Completed Installable APK
         uses: actions/upload-artifact@v4
