@@ -1,5 +1,4 @@
 name: Build Sonic Advance 2 Android APK
-
 on:
   workflow_dispatch:
 
@@ -16,10 +15,12 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      # Restored: Original host packages + added cmake/ninja for cross-compiling
       - name: Install Native Host Build Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libpng-dev xorg-dev libsdl2-dev
+          sudo apt-get install -y build-essential libpng-dev xorg-dev libsdl2-dev cmake ninja-build
+
       # Setting up Android SDK & NDK environments
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
@@ -30,14 +31,37 @@ jobs:
           sdkmanager "ndk;26.1.10909125"
           echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/26.1.10909125" >> $GITHUB_ENV
 
+      # Compiles the 2.30+ ARM64 Android version of SDL2
+      - name: Compile SDL2 2.30+ for Android NDK
+        run: |
+          git clone --depth 1 --branch SDL2 https://github.com
+          cd SDL
+          mkdir build && cd build
+          
+          cmake -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE=$ANDROID_SDK_ROOT/ndk/26.1.10909125/build/cmake/android.toolchain.cmake \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-24 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=$ANDROID_SDK_ROOT/ndk/26.1.10909125/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr \
+            ..
+            
+          ninja
+          sudo ninja install
+
       - name: Pre-build stub Chao Garden asset (placeholder, non-GBA platforms only)
         run: |
           make tools
           make PLATFORM=android chao_garden/mb_chao_garden.gba.lz
+
       # STAGE 1: Run your Makefile rule to generate assets and libagbsyscall
+      # Includes both SDL2 header directory variants for perfect compatibility
       - name: Compile Game Assets and Native Tools
         run: |
+          export CFLAGS="-I$ANDROID_SDK_ROOT/ndk/26.1.10909125/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include -I$ANDROID_SDK_ROOT/ndk/26.1.10909125/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/SDL2"
+          export CPPFLAGS="-I$ANDROID_SDK_ROOT/ndk/26.1.10909125/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include -I$ANDROID_SDK_ROOT/ndk/26.1.10909125/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/SDL2"
           make android GAME_NAME=sa2 GAME_REGION=USA
+
       # STAGE 2: Pass everything to Gradle to package the APK
       - name: Make Gradle Wrapper Executable
         run: chmod +x android-project/gradlew
@@ -47,6 +71,7 @@ jobs:
         working-directory: ./android-project
         run: |
           ./gradlew assembleDebug
+
       # STAGE 3: Extract the finished installation file out of GitHub Actions
       - name: Upload Completed Installable APK
         uses: actions/upload-artifact@v4
