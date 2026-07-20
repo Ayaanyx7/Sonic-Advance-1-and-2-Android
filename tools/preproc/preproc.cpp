@@ -148,6 +148,7 @@ int main(int argc, char **argv)
     || (!platform.compare("sdl_win32"))
     || (!platform.compare("sdl_psp"))
     || (!platform.compare("ps2")))
+    || (!platform.compare("android")))
     {
         fullRGBA = false;
     } else if(!platform.compare("win32")) {
