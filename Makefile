@@ -524,15 +524,17 @@ data/$(GAME_NAME)/mb_chao_garden_japan.gba.lz: data/$(GAME_NAME)/mb_chao_garden_
 
 %.bin: %.aif ; $(AIF) $< $@
 
+$(info OBJS_REL=$(OBJS_REL))
+
 $(ELF): $(OBJS)
 ifeq ($(PLATFORM),gba)
 	@echo "$(LD) -T $(LDSCRIPT) $(MAP_FLAG) $(MAP) <objects> <lib> -o $@"
 	@$(CPP) -P $(CPPFLAGS) $(LDSCRIPT) > $(OBJ_DIR)/$(LDSCRIPT)
 	@cd $(OBJ_DIR) && $(LD) -T $(LDSCRIPT) $(MAP_FLAG) $(ROOT_DIR)/$(MAP) $(OBJS_REL) $(LIBS) -o $(ROOT_DIR)/$@
 else
-	@echo "OBJ_DIR=$(OBJ_DIR)"
-@echo "OBJS_REL=$(OBJS_REL)"
-@cd $(OBJ_DIR) && $(CC1) $(MAP_FLAG)$(ROOT_DIR)/$(MAP) $(OBJS_REL) $(LIBS) -o $(ROOT_DIR)/$@
+	@echo "$(CC1) $(MAP_FLAG)$(MAP) <objects> <lib> -o $@"
+	@touch $(ROOT_DIR)/$(MAP)
+	@cd $(OBJ_DIR) && $(CC1) $(MAP_FLAG)$(ROOT_DIR)/$(MAP) $(OBJS_REL) $(LIBS) -o $(ROOT_DIR)/$@
 endif
 
 
