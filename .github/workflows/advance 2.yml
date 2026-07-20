@@ -34,6 +34,11 @@ jobs:
         run: |
           make tools
           make PLATFORM=android chao_garden/mb_chao_garden.gba.lz
+      - name: Fetch SDL2 source for Android build
+        run: |
+         curl -L https://github.com/libsdl-org/SDL/releases/download/release-2.30.3/SDL2-2.30.3.tar.gz -o SDL2.tar.gz
+         mkdir -p android-project/app/jni/SDL
+         tar -xzf SDL2.tar.gz -C android-project/app/jni/SDL --strip-components=1
       # STAGE 1: Run your Makefile rule to generate assets and libagbsyscall
       - name: Compile Game Assets and Native Tools
         run: |
