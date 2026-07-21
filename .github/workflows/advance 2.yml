@@ -39,10 +39,6 @@ jobs:
          curl -L https://github.com/libsdl-org/SDL/releases/download/release-2.30.3/SDL2-2.30.3.tar.gz -o SDL2.tar.gz
          mkdir -p android-project/app/jni/SDL
          tar -xzf SDL2.tar.gz -C android-project/app/jni/SDL --strip-components=1
-      # STAGE 1: Run your Makefile rule to generate assets and libagbsyscall
-      - name: Compile Game Assets and Native Tools
-        run: |
-          make android GAME_NAME=sa2 GAME_REGION=USA
       # STAGE 2: Pass everything to Gradle to package the APK
       - name: Make Gradle Wrapper Executable
         run: chmod +x android-project/gradlew
