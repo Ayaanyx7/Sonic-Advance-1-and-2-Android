@@ -570,7 +570,7 @@ $(C_BUILDDIR)/%.o: $(C_SUBDIR)/%.c
 	@$(shell mkdir -p $(shell dirname '$(C_BUILDDIR)/$*.i'))
 	@$(CPP) $(CPPFLAGS) $< -o $(C_BUILDDIR)/$*.i
 ifeq ($(PLATFORM),android)
-	@$(CPP) $(CPPFLAGS) $< -o $(C_BUILDDIR)/$*.i
+	$(CPP) $(CPPFLAGS) $< -o $(C_BUILDDIR)/$*.i
 	@$(PREPROC) $(C_BUILDDIR)/$*.i sdl "" | $(CC1) \
 		$(CPPFLAGS) $(CC1FLAGS) $(INCLUDE_CPP_ARGS) \
 		-DWORKSPACE_ROOT=\"$(ROOT_DIR)\" \
