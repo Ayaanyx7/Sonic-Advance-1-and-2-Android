@@ -534,6 +534,9 @@ ifeq ($(PLATFORM),gba)
 else
 	@echo "$(CC1) $(MAP_FLAG)$(MAP) <objects> <lib> -o $@"
 	@touch $(ROOT_DIR)/$(MAP)
+	@echo "Checking object..."
+	@file $(OBJ_DIR)/src/game/decomp_credits.o || true
+	@head -n 5 $(OBJ_DIR)/src/game/decomp_credits.o || true
 	@cd $(OBJ_DIR) && $(CC1) $(MAP_FLAG)$(ROOT_DIR)/$(MAP) $(OBJS_REL) $(LIBS) -o $(ROOT_DIR)/$@
 endif
 
