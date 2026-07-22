@@ -9,15 +9,14 @@ include $(PREBUILT_STATIC_LIBRARY)
 # 2. Build the Final Native Library for Android
 include $(CLEAR_VARS)
 LOCAL_MODULE    := main
-
-# Leave this empty. The game code library has its own entry point!
 LOCAL_SRC_FILES := 
 
 LOCAL_CFLAGS    := -fPIC
 
-# Pull in your game logic library
 LOCAL_WHOLE_STATIC_LIBRARIES := sa2_game
 LOCAL_SHARED_LIBRARIES       := SDL2
-LOCAL_LDLIBS                 := -llog -landroid
+
+# ⬇️ UPDATE THIS LINE TO ADD THE LINKER FLAGS ⬇️
+LOCAL_LDLIBS                 := -llog -landroid -Wl,-z,notext
 
 include $(BUILD_SHARED_LIBRARY)
