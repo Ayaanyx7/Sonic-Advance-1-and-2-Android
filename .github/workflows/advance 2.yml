@@ -20,7 +20,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libpng-dev xorg-dev libsdl2-dev
-
       # Setting up Android SDK & NDK environments
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
@@ -30,32 +29,27 @@ jobs:
           yes | sdkmanager --licenses || true
           sdkmanager "ndk;26.1.10909125"
           echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/26.1.10909125" >> $GITHUB_ENV
-
       - name: Pre-build stub Chao Garden asset (placeholder, non-GBA platforms only)
         run: |
           make tools
           make PLATFORM=android chao_garden/mb_chao_garden.gba.lz
-
       - name: Fetch SDL2 source for Android build
         run: |
          curl -L https://github.com/libsdl-org/SDL/releases/download/release-2.30.11/SDL2-2.30.11.tar.gz -o SDL2.tar.gz
          mkdir -p android-project/app/jni/SDL
          tar -xzf SDL2.tar.gz -C android-project/app/jni/SDL --strip-components=1
-
       # STAGE 1: Explicitly pass NDK cross-compilers to the Makefile
-            # STAGE 1: Explicitly pass NDK cross-compilers along with position-independent flags
       - name: Compile Game Assets and Native Tools
         run: |
+          # 1. Point to the Clang toolchain path inside NDK 26
           export NDK_TOOLCHAIN=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin
           
-          # Force the compiler to use position independent code (-fPIC) for all raw objects
+          # 2. Run your Makefile while overriding host tools with NDK compilers
           make android GAME_NAME=sa2 GAME_REGION=USA \
             CC=$NDK_TOOLCHAIN/aarch64-linux-android24-clang \
             CXX=$NDK_TOOLCHAIN/aarch64-linux-android24-clang++ \
             AR=$NDK_TOOLCHAIN/llvm-ar \
-            STRIP=$NDK_TOOLCHAIN/llvm-strip \
-            CFLAGS="-fPIC" \
-            CXXFLAGS="-fPIC"
+            STRIP=$NDK_TOOLCHAIN/llvm-strip
             
       # STAGE 2: Pass everything to Gradle to package the APK
       - name: Make Gradle Wrapper Executable
@@ -66,7 +60,6 @@ jobs:
         working-directory: ./android-project
         run: |
           ./gradlew assembleDebug
-
       # STAGE 3: Extract the finished installation file out of GitHub Actions
       - name: Upload Completed Installable APK
         uses: actions/upload-artifact@v4
