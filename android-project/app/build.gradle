@@ -12,6 +12,7 @@ android {
         namespace "org.libsdl.app"
     }
     compileSdkVersion 34
+    ndkVersion "26.1.10909125"
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 34
@@ -20,7 +21,7 @@ android {
         externalNativeBuild {
             ndkBuild {
                 arguments "APP_PLATFORM=android-19"
-                abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+                abiFilters 'arm64-v8a'
             }
             // cmake {
             //     arguments "-DANDROID_APP_PLATFORM=android-19", "-DANDROID_STL=c++_static"
