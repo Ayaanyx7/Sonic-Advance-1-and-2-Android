@@ -531,12 +531,12 @@ ifeq ($(PLATFORM),gba)
 	@echo "$(LD) -T $(LDSCRIPT) $(MAP_FLAG) $(MAP) <objects> <lib> -o $@"
 	@$(CPP) -P $(CPPFLAGS) $(LDSCRIPT) > $(OBJ_DIR)/$(LDSCRIPT)
 	@cd $(OBJ_DIR) && $(LD) -T $(LDSCRIPT) $(MAP_FLAG) $(ROOT_DIR)/$(MAP) $(OBJS_REL) $(LIBS) -o $(ROOT_DIR)/$@
+else ifeq ($(PLATFORM),android)
+	@echo "llvm-ar rc $@ <objects>"
+	@cd $(OBJ_DIR) && llvm-ar rc $(ROOT_DIR)/$@ $(OBJS_REL)
 else
 	@echo "$(CC1) $(MAP_FLAG)$(MAP) <objects> <lib> -o $@"
 	@touch $(ROOT_DIR)/$(MAP)
-	@echo "Checking object..."
-	@file $(OBJ_DIR)/src/game/decomp_credits.o || true
-	@head -n 5 $(OBJ_DIR)/src/game/decomp_credits.o || true
 	@cd $(OBJ_DIR) && $(CC1) $(MAP_FLAG)$(ROOT_DIR)/$(MAP) $(OBJS_REL) $(LIBS) -o $(ROOT_DIR)/$@
 endif
 
