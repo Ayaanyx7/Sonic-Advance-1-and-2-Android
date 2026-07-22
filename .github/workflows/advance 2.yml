@@ -43,17 +43,19 @@ jobs:
          tar -xzf SDL2.tar.gz -C android-project/app/jni/SDL --strip-components=1
 
       # STAGE 1: Explicitly pass NDK cross-compilers to the Makefile
+            # STAGE 1: Explicitly pass NDK cross-compilers along with position-independent flags
       - name: Compile Game Assets and Native Tools
         run: |
-          # 1. Point to the Clang toolchain path inside NDK 26
           export NDK_TOOLCHAIN=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin
           
-          # 2. Run your Makefile while overriding host tools with NDK compilers
+          # Force the compiler to use position independent code (-fPIC) for all raw objects
           make android GAME_NAME=sa2 GAME_REGION=USA \
             CC=$NDK_TOOLCHAIN/aarch64-linux-android24-clang \
             CXX=$NDK_TOOLCHAIN/aarch64-linux-android24-clang++ \
             AR=$NDK_TOOLCHAIN/llvm-ar \
-            STRIP=$NDK_TOOLCHAIN/llvm-strip
+            STRIP=$NDK_TOOLCHAIN/llvm-strip \
+            CFLAGS="-fPIC" \
+            CXXFLAGS="-fPIC"
             
       # STAGE 2: Pass everything to Gradle to package the APK
       - name: Make Gradle Wrapper Executable
