@@ -348,7 +348,7 @@ else
   else ifeq ($(PLATFORM), ps2)
     ASFLAGS  += -msingle-float
   endif
-  CC1FLAGS += -x c -S
+  CC1FLAGS += -x c
   CXXFLAGS += -x c++ -S
 endif
 
