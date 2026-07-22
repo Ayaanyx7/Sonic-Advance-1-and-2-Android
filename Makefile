@@ -563,7 +563,9 @@ else ifeq ($(PLATFORM),ps2)
 	@cp $< $(OBJ_DIR)/iso/$(PS2_GAME_CODE)
 	@mkisofs -o $(ROM) $(OBJ_DIR)/iso/
 else
-	$(OBJCOPY) -O pei-x86-64 $< $@
+	# Locate the rule generating your static library
+libsa2_game.a: $(OBJS)
+	$(AR) rcs $@ $(OBJS)
 endif
 
 $(C_BUILDDIR)/%.o: $(C_SUBDIR)/%.c
