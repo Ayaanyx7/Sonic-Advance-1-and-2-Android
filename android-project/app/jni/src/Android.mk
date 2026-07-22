@@ -13,6 +13,8 @@ LOCAL_MODULE    := main
 # Leave this empty. The game code library has its own entry point!
 LOCAL_SRC_FILES := 
 
+LOCAL_CFLAGS    := -fPIC
+
 # Pull in your game logic library
 LOCAL_WHOLE_STATIC_LIBRARIES := sa2_game
 LOCAL_SHARED_LIBRARIES       := SDL2
