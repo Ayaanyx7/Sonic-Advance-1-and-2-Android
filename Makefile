@@ -549,8 +549,6 @@ else ifeq ($(PLATFORM),win32)
 	$(OBJCOPY) -O pei-x86-64 $< $@
 else ifeq ($(PLATFORM),sdl)
 	cp $< $@
-else ifeq ($(PLATFORM),android)
-	cp $< $@
 else ifeq ($(PLATFORM),sdl_psp)
 	@echo Creating $(ROM) from $(ELF)
 	@psp-fixup-imports $<
