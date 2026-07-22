@@ -563,7 +563,8 @@ else ifeq ($(PLATFORM),ps2)
 	@cp $< $(OBJ_DIR)/iso/$(PS2_GAME_CODE)
 	@mkisofs -o $(ROM) $(OBJ_DIR)/iso/
 else
-	# Locate the rule generating your static library
+	# Old broken rule combined libagbsyscall via objcopy. 
+# Change it to just archive the game's compiled object files:
 libsa2_game.a: $(OBJS)
 	$(AR) rcs $@ $(OBJS)
 endif
