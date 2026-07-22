@@ -147,8 +147,8 @@ ROM      := $(BUILD_NAME).sdl
 ELF      := $(ROM).elf
 MAP      := $(ROM).map
 else ifeq ($(PLATFORM),android)
-ROM      := lib$(BUILD_NAME).so
-ELF      := $(ROM).elf
+ROM      := libsa2_game.a
+ELF      := $(ROM)
 MAP      := $(BUILD_NAME).android.map
 else ifeq ($(PLATFORM),sdl_psp)
 ROM      := EBOOT.PBP
