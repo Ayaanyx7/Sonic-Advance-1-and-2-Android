@@ -12,7 +12,7 @@ include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := main
-LOCAL_SRC_FILES := $(LOCAL_PATH)/stub.c
+LOCAL_SRC_FILES := stub.c
 LOCAL_WHOLE_STATIC_LIBRARIES := sa2_game agbsyscall
 LOCAL_SHARED_LIBRARIES := SDL2
 LOCAL_LDLIBS := -llog -landroid
