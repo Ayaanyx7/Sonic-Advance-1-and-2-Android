@@ -11,7 +11,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE    := main
 
 # Use the exact flat local filename copied by your workflow
-LOCAL_SRC_FILES := libagbsyscall.c
+LOCAL_SRC_FILES := ../../../../libagbsyscall/libagbsyscall.c
 LOCAL_CFLAGS    := -fPIC
 
 # ⬇️ POINT DIRECTLY TO THE MAIN REPOSITORY HEADERS ⬇️
