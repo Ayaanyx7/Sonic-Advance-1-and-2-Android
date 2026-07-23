@@ -45,7 +45,7 @@ jobs:
           export NDK_TOOLCHAIN=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin
           
           # 2. Run your Makefile while overriding host tools with NDK compilers
-          make android GAME_NAME=sa2 GAME_REGION=USA \
+          make android GAME_NAME=sa2 GAME_REGION=USA MODERN=1 \
             CC=$NDK_TOOLCHAIN/aarch64-linux-android24-clang \
             CXX=$NDK_TOOLCHAIN/aarch64-linux-android24-clang++ \
             AR=$NDK_TOOLCHAIN/llvm-ar \
