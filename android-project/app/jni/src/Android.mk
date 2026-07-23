@@ -25,6 +25,6 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../../../include \
 
 LOCAL_WHOLE_STATIC_LIBRARIES := sa2_game agbsyscall
 LOCAL_SHARED_LIBRARIES       := SDL2
-LOCAL_LDLIBS                 := -llog -landroid -Wl,-z,notext -Wl,--allow-multiple-definition
+LOCAL_LDLIBS                 := -llog -landroid -Wl,--allow-multiple-definition
 
 include $(BUILD_SHARED_LIBRARY)
