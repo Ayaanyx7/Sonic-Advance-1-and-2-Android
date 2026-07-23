@@ -39,26 +39,15 @@ jobs:
          mkdir -p android-project/app/jni/SDL
          tar -xzf SDL2.tar.gz -C android-project/app/jni/SDL --strip-components=1
       # STAGE 1: Explicitly pass NDK cross-compilers to the Makefile
-            # STAGE 1: Force compile with muted sound variables to bypass absolute pointer arrays
-            # STAGE 1: Force compile with muted sound variables to bypass absolute pointer arrays
       - name: Compile Game Assets and Native Tools
         run: |
           export NDK_TOOLCHAIN=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin
           
-          # Force clean old objects to wipe out the cached midi object files
-          make clean || true
-          
-          # ⬇️ OVERRIDING SOUND FILES TO NOTHING STRIPS THE RELOCATION BUG COLD ⬇️
           make android GAME_NAME=sa2 GAME_REGION=USA MODERN=1 \
             CC=$NDK_TOOLCHAIN/aarch64-linux-android24-clang \
             CXX=$NDK_TOOLCHAIN/aarch64-linux-android24-clang++ \
             AR=$NDK_TOOLCHAIN/llvm-ar \
-            STRIP=$NDK_TOOLCHAIN/llvm-strip \
-            SOUND_SRCS="" \
-            SOUND_OBJS="" \
-            SONG_OBJS="" \
-            MID_SRCS=""
-
+            STRIP=$NDK_TOOLCHAIN/llvm-strip
       - name: Build libagbsyscall
         run: |
          cd libagbsyscall
@@ -79,12 +68,10 @@ jobs:
           rm -rf android-project/app/.cxx/
           rm -rf android-project/app/build/
           rm -rf android-project/.gradle/
-
       - name: Package Android APK via Gradle
         working-directory: ./android-project
         run: |
           ./gradlew assembleDebug --no-build-cache
-
       # STAGE 3: Extract the finished installation file out of GitHub Actions
       - name: Upload Completed Installable APK
         uses: actions/upload-artifact@v4
