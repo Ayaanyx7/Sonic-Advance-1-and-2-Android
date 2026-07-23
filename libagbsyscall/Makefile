@@ -124,7 +124,8 @@ ifeq ($(PLATFORM),android)
                     -fPIC
 
         ASFLAGS += --target=aarch64-linux-android$(ANDROID_API) \
-                   --sysroot=$(ANDROID_NDK_HOME)/toolchains/llvm/prebuilt/linux-x86_64/sysroot
+                   --sysroot=$(ANDROID_NDK_HOME)/toolchains/llvm/prebuilt/linux-x86_64/sysroot \
+                   -fPIC
 endif
 
 ifeq ($(CPU_ARCH),arm)
