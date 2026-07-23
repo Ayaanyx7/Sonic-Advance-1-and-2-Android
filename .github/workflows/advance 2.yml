@@ -47,7 +47,10 @@ jobs:
           # Force clean old objects so they inherit the new data layout rules
           make clean || true
           
-          # 2. Run Makefile while injecting text-relative parameters via XCFLAGS override loop
+          # 2. RUN MAKE TOOLS FIRST USING HOST COMPILERS FOR UTILITIES
+          make tools CC=gcc CXX=g++
+          
+          # 3. RUN MAKE ANDROID WHILE RESTRICTING NDK CROSS-COMPILERS TO GAME BINARIES
           make android GAME_NAME=sa2 GAME_REGION=USA MODERN=1 \
             CC=$NDK_TOOLCHAIN/aarch64-linux-android24-clang \
             CXX=$NDK_TOOLCHAIN/aarch64-linux-android24-clang++ \
