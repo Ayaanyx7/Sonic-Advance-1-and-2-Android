@@ -6,17 +6,18 @@ LOCAL_MODULE    := sa2_game
 LOCAL_SRC_FILES := $(LOCAL_PATH)/../../../../libsa2_game.a
 include $(PREBUILT_STATIC_LIBRARY)
 
-# 2. Build the Final Native Shared Library for Android
+# 2. Define the Prebuilt agbsyscall Library
+include $(CLEAR_VARS)
+LOCAL_MODULE    := agbsyscall
+LOCAL_SRC_FILES := $(LOCAL_PATH)/../../../../libagbsyscall/build/android/libagbsyscall.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+# 3. Build the Final Native Shared Library for Android
 include $(CLEAR_VARS)
 LOCAL_MODULE    := main
 
 # Use the exact flat local filename copied by your workflow
 LOCAL_CFLAGS    := -fPIC -DWIDESCREEN_HACK=1
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := agbsyscall
-LOCAL_SRC_FILES := $(LOCAL_PATH)/../../../../libagbsyscall/build/android/libagbsyscall.a
-include $(PREBUILT_STATIC_LIBRARY)
 
 # ⬇️ POINT DIRECTLY TO THE MAIN REPOSITORY HEADERS ⬇️
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../../../include \
