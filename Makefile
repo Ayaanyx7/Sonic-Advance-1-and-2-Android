@@ -337,22 +337,25 @@ CXXFLAGS := $(CC1FLAGS) $(CPPFLAGS) -fno-rtti -fno-exceptions -std=c++11
 
 ifeq ($(PLATFORM),gba)
   ASFLAGS  += -mcpu=arm7tdmi -mthumb-interwork
-  CC1FLAGS += -mthumb-interwork
+  CFLAGS   += -mthumb-interwork
 else
   ifeq ($(PLATFORM), sdl)
     CPP := $(CC1) -E
   else ifeq ($(PLATFORM),android)
-    ASFLAGS += -c --target=aarch64-linux-android$(ANDROID_API) --sysroot=$(ANDROID_NDK_HOME)/toolchains/llvm/prebuilt/linux-x86_64/sysroot -fPIC
-    CC1FLAGS += -fPIC
+    ASFLAGS  += -c --target=aarch64-linux-android$(ANDROID_API) --sysroot=$(ANDROID_NDK_HOME)/toolchains/llvm/prebuilt/linux-x86_64/sysroot -fPIC
+    # Changed CC1FLAGS to CFLAGS so the compiler actually reads it
+    CFLAGS   += -fPIC
     CXXFLAGS += -fPIC
   else ifeq ($(PLATFORM), sdl_psp)
     CPP := $(CC1) -E
   else ifeq ($(PLATFORM), ps2)
     ASFLAGS  += -msingle-float
   endif
-  CC1FLAGS += -x c
-  CXXFLAGS += -x c++ -S
-endif
+  # REMOVED the early-exit "-S" flag below
+  CFLAGS   += -x c
+  CXXFLAGS += -x c++
+  endif
+
 
 ### LINKER FLAGS ###
 
