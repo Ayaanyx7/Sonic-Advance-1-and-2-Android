@@ -56,10 +56,24 @@ jobs:
         run: chmod +x android-project/gradlew
         continue-on-error: true
 
+            # STAGE 2: Flatten paths, kill persistent cache, and pass to Gradle
+      - name: Flatten Bios Emulation Code Paths
+        run: |
+          # 1. Physically copy files locally so no complex paths are needed
+          cp libagbsyscall/src/agbsyscall.c android-project/app/jni/
+          cp libagbsyscall/include/agbsyscall.h android-project/app/jni/
+          
+          # 2. Force delete Android Studio's rigid, hidden C++ build cache directories
+          rm -rf android-project/app/.cxx/
+          rm -rf android-project/app/build/
+          rm -rf android-project/.gradle/
+
       - name: Package Android APK via Gradle
         working-directory: ./android-project
         run: |
-          ./gradlew assembleDebug
+          # Use --no-build-cache to guarantee it parses your new local Android.mk
+          ./gradlew assembleDebug --no-build-cache
+
       # STAGE 3: Extract the finished installation file out of GitHub Actions
       - name: Upload Completed Installable APK
         uses: actions/upload-artifact@v4
