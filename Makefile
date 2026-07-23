@@ -344,8 +344,8 @@ else
   else ifeq ($(PLATFORM),android)
     ASFLAGS  += -c --target=aarch64-linux-android$(ANDROID_API) --sysroot=$(ANDROID_NDK_HOME)/toolchains/llvm/prebuilt/linux-x86_64/sysroot -fPIC
     # Changed CC1FLAGS to CFLAGS so the compiler actually reads it
-    CFLAGS   += -fPIC
-    CXXFLAGS += -fPIC
+    CFLAGS   += -fPIC -fno-common
+    CXXFLAGS += -fPIC -fno-common
   else ifeq ($(PLATFORM), sdl_psp)
     CPP := $(CC1) -E
   else ifeq ($(PLATFORM), ps2)
