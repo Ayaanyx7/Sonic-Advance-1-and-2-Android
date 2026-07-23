@@ -12,7 +12,7 @@ LOCAL_MODULE    := main
 
 # Use the exact flat local filename copied by your workflow
 LOCAL_SRC_FILES := ../../../../libagbsyscall/libagbsyscall.c
-LOCAL_CFLAGS    := -fPIC
+LOCAL_CFLAGS    := -fPIC -DWIDESCREEN_HACK=1
 
 # ⬇️ POINT DIRECTLY TO THE MAIN REPOSITORY HEADERS ⬇️
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../../../include \
