@@ -10,13 +10,12 @@ include $(PREBUILT_STATIC_LIBRARY)
 include $(CLEAR_VARS)
 LOCAL_MODULE    := main
 
-# ⬇️ ADD THE AGBSYSCALL C FILE SOURCE HERE ⬇️
-LOCAL_SRC_FILES := $(LOCAL_PATH)/../../../../libagbsyscall/src/agbsyscall.c
+# Use a clean, flattened path variable mapping to prevent the parser from appending subfolders
+DECOMP_ROOT     := $(LOCAL_PATH)/../../../../
+LOCAL_SRC_FILES := $(DECOMP_ROOT)libagbsyscall/src/agbsyscall.c
 
 LOCAL_CFLAGS    := -fPIC
-
-# Include headers for the syscall emulation layer
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../../../libagbsyscall/include
+LOCAL_C_INCLUDES := $(DECOMP_ROOT)libagbsyscall/include
 
 LOCAL_WHOLE_STATIC_LIBRARIES := sa2_game
 LOCAL_SHARED_LIBRARIES       := SDL2
