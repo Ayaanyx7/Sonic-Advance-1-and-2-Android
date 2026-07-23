@@ -11,14 +11,18 @@ include $(CLEAR_VARS)
 LOCAL_MODULE    := main
 
 # Use the exact flat local filename copied by your workflow
-LOCAL_SRC_FILES := ../../../../libagbsyscall/libagbsyscall.c
 LOCAL_CFLAGS    := -fPIC -DWIDESCREEN_HACK=1
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := agbsyscall
+LOCAL_SRC_FILES := $(LOCAL_PATH)/../../../../libagbsyscall/build/android/libagbsyscall.a
+include $(PREBUILT_STATIC_LIBRARY)
 
 # ⬇️ POINT DIRECTLY TO THE MAIN REPOSITORY HEADERS ⬇️
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../../../include \
                     $(LOCAL_PATH)/../../../../libagbsyscall
 
-LOCAL_WHOLE_STATIC_LIBRARIES := sa2_game
+LOCAL_WHOLE_STATIC_LIBRARIES := sa2_game agbsyscall
 LOCAL_SHARED_LIBRARIES       := SDL2
 LOCAL_LDLIBS                 := -llog -landroid -Wl,-z,notext
 
