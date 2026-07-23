@@ -50,6 +50,11 @@ jobs:
             CXX=$NDK_TOOLCHAIN/aarch64-linux-android24-clang++ \
             AR=$NDK_TOOLCHAIN/llvm-ar \
             STRIP=$NDK_TOOLCHAIN/llvm-strip
+
+      - name: Build libagbsyscall
+        run: |
+         cd libagbsyscall
+         make PLATFORM=android
             
       # STAGE 2: Pass everything to Gradle to package the APK
       - name: Make Gradle Wrapper Executable
@@ -59,9 +64,6 @@ jobs:
                   # STAGE 2: Flatten paths, kill persistent cache, and pass to Gradle
       - name: Flatten Bios Emulation Code Paths
         run: |
-          # Copy the raw source file directly into the local app/jni folder
-          cp libagbsyscall/libagbsyscall.c android-project/app/jni/
-          
           # Force delete Android Studio's rigid, hidden C++ build cache directories
           rm -rf android-project/app/.cxx/
           rm -rf android-project/app/build/
