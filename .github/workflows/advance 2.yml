@@ -41,23 +41,14 @@ jobs:
       # STAGE 1: Explicitly pass NDK cross-compilers to the Makefile
       - name: Compile Game Assets and Native Tools
         run: |
-          # 1. Point to the Clang toolchain path inside NDK 26
           export NDK_TOOLCHAIN=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin
           
-          # Force clean old objects so they inherit the new data layout rules
-          make clean || true
-          
-          # 2. RUN MAKE TOOLS FIRST USING HOST COMPILERS FOR UTILITIES
-          make tools CC=gcc CXX=g++
-          
-          # 3. RUN MAKE ANDROID WHILE RESTRICTING NDK CROSS-COMPILERS TO GAME BINARIES
           make android GAME_NAME=sa2 GAME_REGION=USA MODERN=1 \
             CC=$NDK_TOOLCHAIN/aarch64-linux-android24-clang \
             CXX=$NDK_TOOLCHAIN/aarch64-linux-android24-clang++ \
             AR=$NDK_TOOLCHAIN/llvm-ar \
-            STRIP=$NDK_TOOLCHAIN/llvm-strip \
-            XCFLAGS="-fPIC -fpie -fno-common" \
-            ARCH_FLAGS="-fPIC -fpie -fno-common"
+            STRIP=$NDK_TOOLCHAIN/llvm-strip
+
 
       - name: Build libagbsyscall
         run: |
