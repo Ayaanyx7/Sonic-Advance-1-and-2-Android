@@ -17,7 +17,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE    := main
 
 # Use the exact flat local filename copied by your workflow
-LOCAL_CFLAGS    := -fPIC -DWIDESCREEN_HACK=1
+LOCAL_CFLAGS    := -fPIC -fpie -fno-common -DWIDESCREEN_HACK=1
 
 # ⬇️ POINT DIRECTLY TO THE MAIN REPOSITORY HEADERS ⬇️
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../../../include \
@@ -25,5 +25,9 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../../../include \
 
 LOCAL_WHOLE_STATIC_LIBRARIES := sa2_game agbsyscall
 LOCAL_SHARED_LIBRARIES       := SDL2
-LOCAL_LDLIBS                 := -llog -landroid -Wl,--allow-multiple-definition
+LOCAL_LDLIBS                 := -llog -landroid \
+                                -Wl,--allow-multiple-definition \
+                                -Wl,-z,notext \
+                                -Wl,-z,muldefs \
+                                -Wl,--no-fatal-warnings
 include $(BUILD_SHARED_LIBRARY)
