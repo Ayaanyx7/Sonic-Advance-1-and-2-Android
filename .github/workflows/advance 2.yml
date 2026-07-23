@@ -54,7 +54,10 @@ jobs:
       - name: Build libagbsyscall
         run: |
          cd libagbsyscall
+         make clean || true
          make PLATFORM=android
+         echo "=== Libraries ==="
+         find . -name "*.a"
             
       # STAGE 2: Pass everything to Gradle to package the APK
       - name: Make Gradle Wrapper Executable
