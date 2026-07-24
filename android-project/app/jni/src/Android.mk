@@ -17,7 +17,8 @@ include $(CLEAR_VARS)
 LOCAL_MODULE    := main
 
 # Use the exact flat local filename copied by your workflow
-LOCAL_CFLAGS    := -fPIC -fpie -fno-common -DWIDESCREEN_HACK=1
+LOCAL_CFLAGS    := -fvisibility=hidden -fPIC -fpie -fno-common -DWIDESCREEN_HACK=1
+LOCAL_ASFLAGS   := -fPIC
 
 # ⬇️ POINT DIRECTLY TO THE MAIN REPOSITORY HEADERS ⬇️
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../../../include \
