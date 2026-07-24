@@ -4,6 +4,7 @@ $(MID_BUILDDIR)/%.o: $(MID_SUBDIR)/%.s
 	@echo "$(AS) <flags> -I sound -o $@ $<"
 	@$(PREPROC) $< $(if $(filter android,$(PLATFORM)),sdl,$(PLATFORM)) "" | \
 	$(CPP) $(CPPFLAGS) - | \
+	sed -E 's/\.(word|quad)[[:space:]]+(mus_|se_)/.data \/\/ Stripped absolute reference to \2/' | \
 	$(AS) $(ASFLAGS) -o $@ -
 
 $(MID_SUBDIR)/mus_intro.s: %.s: %.mid
