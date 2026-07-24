@@ -47,7 +47,9 @@ jobs:
             CC=$NDK_TOOLCHAIN/aarch64-linux-android24-clang \
             CXX=$NDK_TOOLCHAIN/aarch64-linux-android24-clang++ \
             AR=$NDK_TOOLCHAIN/llvm-ar \
-            STRIP=$NDK_TOOLCHAIN/llvm-strip
+            STRIP=$NDK_TOOLCHAIN/llvm-strip \
+            CFLAGS="-fPIC" \
+            CXXFLAGS="-fPIC"
       - name: Build libagbsyscall
         run: |
          cd libagbsyscall
