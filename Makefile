@@ -94,7 +94,7 @@ ifeq ($(PLATFORM),android)
 CPP       := $(CC1) -E
 LD        := $(CC1) -shared
 OBJCOPY   := $(PREFIX)objcopy
-AS        := $(CC1) -x assembler-with-cpp -c
+AS        := $(CC1) -fPIC -x assembler-with-cpp -c
 CC1FLAGS  += -fPIC
 else
 CPP       := $(PREFIX)cpp
