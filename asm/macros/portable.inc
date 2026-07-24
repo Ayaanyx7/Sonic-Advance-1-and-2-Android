@@ -9,7 +9,11 @@
 // Used so that we can have cross platform (32bit or 64bit) pointers
 .macro mPtr value
 #if defined(__aarch64__) || defined(__x86_64__)
-    .quad \value - .
+    .hidden \value
+    .quad \value
+#elif defined(__mips__) && defined(__ANDROID__)
+    .hidden \value
+    .4byte \value
 #elif defined(__mips__)
     .4byte \value
 #else
