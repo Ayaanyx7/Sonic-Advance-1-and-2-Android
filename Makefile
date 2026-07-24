@@ -95,7 +95,7 @@ CPP       := $(CC1) -E
 LD        := $(CC1) -shared
 OBJCOPY   := $(PREFIX)objcopy
 AS        := $(CC1) -fPIC -x assembler-with-cpp -c
-CC1FLAGS  += -fPIC
+CC1FLAGS  += -fPIC -DMODERN -DPORTABLE
 else
 CPP       := $(PREFIX)cpp
 LD        := $(PREFIX)ld
