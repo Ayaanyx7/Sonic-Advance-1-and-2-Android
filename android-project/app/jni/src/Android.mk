@@ -27,7 +27,6 @@ LOCAL_WHOLE_STATIC_LIBRARIES := sa2_game agbsyscall
 LOCAL_SHARED_LIBRARIES       := SDL2
 LOCAL_LDLIBS                 := -llog -landroid \
                                 -Wl,--allow-multiple-definition \
-                                -Wl,-z,notext \
                                 -Wl,-z,muldefs \
                                 -Wl,--no-fatal-warnings
 include $(BUILD_SHARED_LIBRARY)
