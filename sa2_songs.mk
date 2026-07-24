@@ -1,10 +1,11 @@
 STD_REVERB = 0
 
 $(MID_BUILDDIR)/%.o: $(MID_SUBDIR)/%.s
-	@echo "Compiling legacy stream asset $<..."
+	@echo "$(AS) <flags> -I sound -o $@ $<"
 	@$(PREPROC) $< $(if $(filter android,$(PLATFORM)),sdl,$(PLATFORM)) "" | \
 	$(CPP) $(CPPFLAGS) - | \
-	$(AS) $(ASFLAGS) -fPIC -o $@ -
+	sed -E 's/\.(word|quad)[[:space:]]+(mus_|se_)/.data \/\/ Stripped absolute reference to \2/' | \
+	$(AS) $(ASFLAGS) -o $@ -
 
 $(MID_SUBDIR)/mus_intro.s: %.s: %.mid
 	$(MID2AGB) $< $@ -C $(MIDI_COMMENTS) -E -R$(STD_REVERB) -G21  -V120
