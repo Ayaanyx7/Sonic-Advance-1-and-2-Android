@@ -9,16 +9,7 @@
 // Used so that we can have cross platform (32bit or 64bit) pointers
 .macro mPtr value
 #if defined(__aarch64__) || defined(__x86_64__)
-    // Only hide if value is a text symbol and not a numeric 0
-    .ifnc \value, 0
-        .hidden \value
-    .endif
     .quad \value
-#elif defined(__mips__) && defined(__ANDROID__)
-    .ifnc \value, 0
-        .hidden \value
-    .endif
-    .4byte \value
 #elif defined(__mips__)
     .4byte \value
 #else
