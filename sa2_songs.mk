@@ -1,11 +1,24 @@
 STD_REVERB = 0
 
 $(MID_BUILDDIR)/%.o: $(MID_SUBDIR)/%.s
-	@echo "$(AS) <flags> -I sound -o $@ $<"
+	@echo "Transforming and compiling $< for 64-bit PIC compatibility..."
 	@$(PREPROC) $< $(if $(filter android,$(PLATFORM)),sdl,$(PLATFORM)) "" | \
 	$(CPP) $(CPPFLAGS) - | \
-	sed -E 's/\.(word|quad)[[:space:]]+(mus_|se_)/.data \/\/ Stripped absolute reference to \2/' | \
-	$(AS) $(ASFLAGS) -o $@ -
+	awk '\
+		/^[[:space:]]*\.(word|quad)[[:space:]]+/ { \
+			split($$0, parts, "."); \
+			type = (parts[2] ~ /^word/) ? "word" : "quad"; \
+			sub(/^[[:space:]]*\.(word|quad)[[:space:]]+/, ""); \
+			symbol = $$0; \
+			gsub(/[[:space:]\/\/.*]/, "", symbol); \
+			if (symbol ~ /^[a-zA-Z0-9_]+$$/) { \
+				print "\t." type " " symbol " - ."; \
+				next; \
+			} \
+		} \
+		{ print } \
+	' | \
+	$(AS) $(ASFLAGS) -fPIC -o $@ -
 
 $(MID_SUBDIR)/mus_intro.s: %.s: %.mid
 	$(MID2AGB) $< $@ -C $(MIDI_COMMENTS) -E -R$(STD_REVERB) -G21  -V120
