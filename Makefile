@@ -145,7 +145,7 @@ ROM      := $(BUILD_NAME).$(PLATFORM).iso
 ELF      := $(ROM:.iso=.elf)
 MAP      := $(ROM:.iso=.map)
 else ifeq ($(PLATFORM),android)
-ROM      := $(BUILD_NAME).$(PLATFORM).sdl
+ROM      := $(BUILD_NAME).sdl
 ELF      := $(ROM).elf
 MAP      := $(ROM).map
 else
