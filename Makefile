@@ -144,6 +144,10 @@ else ifeq ($(PLATFORM),ps2)
 ROM      := $(BUILD_NAME).$(PLATFORM).iso
 ELF      := $(ROM:.iso=.elf)
 MAP      := $(ROM:.iso=.map)
+else ifeq ($(PLATFORM),android)
+ROM      := $(BUILD_NAME).$(PLATFORM).sdl
+ELF      := $(ROM).elf
+MAP      := $(ROM).map
 else
 ROM      := $(BUILD_NAME).$(PLATFORM).exe
 ELF      := $(ROM:.exe=.elf)
