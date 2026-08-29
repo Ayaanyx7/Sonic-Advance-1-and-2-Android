@@ -9,7 +9,7 @@ else {
 
 android {
     if (buildAsApplication) {
-        namespace "org.libsdl.app"
+        namespace "org.sega.sonicadv2"
     }
     compileSdkVersion 34
     defaultConfig {
@@ -20,7 +20,7 @@ android {
         externalNativeBuild {
             ndkBuild {
                 arguments "APP_PLATFORM=android-19"
-                abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+                abiFilters 'armeabi-v7a'
             }
             // cmake {
             //     arguments "-DANDROID_APP_PLATFORM=android-19", "-DANDROID_STL=c++_static"
