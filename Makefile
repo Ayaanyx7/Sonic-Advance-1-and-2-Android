@@ -43,6 +43,13 @@ ifeq ($(PLATFORM),gba)
   endif
 
   PREFIX := arm-none-eabi-
+# android
+else ifeq ($(PLATFORM),android)
+  ANDROID_NDK_HOME ?= $(ANDROID_NDK_ROOT)
+  ANDROID_API      ?= 24
+  ANDROID_TOOLCHAIN := $(ANDROID_NDK_HOME)/toolchains/llvm/prebuilt/linux-x86_64/bin
+  export PATH := $(ANDROID_TOOLCHAIN):$(PATH)
+  PREFIX := armv7a-linux-androideabi$(ANDROID_API)-
 # x86
 else ifeq ($(CPU_ARCH),i386)
   ifeq ($(PLATFORM),sdl_win32)
