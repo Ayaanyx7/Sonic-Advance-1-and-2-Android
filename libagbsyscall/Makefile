@@ -47,6 +47,12 @@ else ifeq ($(PLATFORM),sdl_psp)
   PREFIX    := psp-
 else ifeq ($(PLATFORM),ps2)
   PREFIX := mips64r5900el-ps2-elf-
+else ifeq ($(PLATFORM),android)
+  ANDROID_NDK_HOME ?= $(ANDROID_NDK_ROOT)
+  ANDROID_API      ?= 24
+  ANDROID_TOOLCHAIN := $(ANDROID_NDK_HOME)/toolchains/llvm/prebuilt/linux-x86_64/bin
+  export PATH := $(ANDROID_TOOLCHAIN):$(PATH)
+  PREFIX := armv7a-linux-androideabi$(ANDROID_API)-
 else ifneq ($(PLATFORM),sdl)
    $(error Unknown CPU architecture $(CPU_ARCH))
 endif # (PLATFORM == gba)
@@ -85,7 +91,7 @@ ifneq ($(PLATFORM),gba)
     ifeq ($(DEBUG),1)
         CC1FLAGS += -g -O0
     else
-        CC1FLAGS += -O2
+        CC1FLAGS += -O2 -fPIC
     endif
 
     ifeq ($(CPU_ARCH),i386)
