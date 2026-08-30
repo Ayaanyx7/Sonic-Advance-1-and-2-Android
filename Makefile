@@ -279,7 +279,6 @@ else
     else ifeq ($(PLATFORM),android)
 		CC1FLAGS += -Wno-parentheses-equality -Wno-unused-value -fPIC
 		CPPFLAGS += -D TITLE_BAR=$(BUILD_NAME).$(PLATFORM) -D PLATFORM_GBA=0 -D PLATFORM_SDL=1 -D PLATFORM_WIN32=0 $(shell sdl2-config --cflags)
-        ASFLAGS += -c
 	else ifeq ($(PLATFORM),sdl_psp)
 		CC1FLAGS += -G0
 		CPPFLAGS += -D PLATFORM_GBA=0 -D PLATFORM_SDL=1 -D PLATFORM_WIN32=0 -D SDL_MAIN_HANDLED -I$(PSPDEV)/psp/include/SDL2 -I$(PSPDEV)/psp/include -I$(PSPSDK)/include -D_PSP_FW_VERSION=600
@@ -351,7 +350,7 @@ else
     # so instead of CPP we can use gcc -E to "preprocess only"
     CPP := $(CC1) -E
   else ifeq ($(PLATFORM), android)
-    CPP := $(CC1) -E
+    CPP := $(CC) -E
     ASFLAGS += -c --target=armv7a-linux-androideabi$(ANDROID_API) --sysroot=$(ANDROID_NDK_HOME)/toolchains/llvm/prebuilt/linux-x86_64/sysroot -fPIC
     CFLAGS   += -fPIC -fno-common
     CXXFLAGS += -fPIC -fno-common
