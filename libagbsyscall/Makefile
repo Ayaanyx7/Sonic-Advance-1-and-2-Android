@@ -120,7 +120,7 @@ ifeq ($(PLATFORM), android)
                     --sysroot=$(ANDROID_NDK_HOME)/toolchains/llvm/prebuilt/linux-x86_64/sysroot \
                     -fPIC
 
-        ASFLAGS += --target=armv7a-linux-androideabi$(ANDROID_API) \
+        ASFLAGS += -c --target=armv7a-linux-androideabi$(ANDROID_API) \
                    --sysroot=$(ANDROID_NDK_HOME)/toolchains/llvm/prebuilt/linux-x86_64/sysroot \
                    -fPIC
 endif
