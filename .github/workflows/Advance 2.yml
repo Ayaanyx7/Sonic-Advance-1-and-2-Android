@@ -43,7 +43,7 @@ jobs:
         run: |
           export NDK_TOOLCHAIN=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin
           
-          make android GAME_NAME=sa2 GAME_REGION=USA PORTABLE=1 \
+          make PLATFORM=android GAME_NAME=sa2 GAME_REGION=USA PORTABLE=1 \
             CC=$NDK_TOOLCHAIN/armv7a-linux-androideabi24-clang \
             CXX=$NDK_TOOLCHAIN/armv7a-linux-androideabi24-clang++ \
             AR=$NDK_TOOLCHAIN/llvm-ar \
