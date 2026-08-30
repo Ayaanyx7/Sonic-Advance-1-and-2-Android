@@ -123,6 +123,7 @@ ifeq ($(PLATFORM), android)
         ASFLAGS += --target=armv7a-linux-androideabi$(ANDROID_API) \
                    --sysroot=$(ANDROID_NDK_HOME)/toolchains/llvm/prebuilt/linux-x86_64/sysroot \
                    -fPIC
+endif
 
 ifeq ($(CPU_ARCH),arm)
 ifeq ($(PLATFORM),gba)
