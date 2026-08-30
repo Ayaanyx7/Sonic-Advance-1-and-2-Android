@@ -386,7 +386,7 @@ ifeq ($(PLATFORM),gba)
 else ifeq ($(PLATFORM),sdl)
     LIBS := $(shell sdl2-config --cflags --libs) $(LIBABGSYSCALL_LIBS) -lm
 else ifeq ($(PLATFORM),android)
-    LIBS := $(shell sdl2-config --cflags --libs) $(LIBABGSYSCALL_LIBS) -lm
+    LIBS :=
 else ifeq ($(PLATFORM),sdl_psp)
     LIBS := -L$(PSPDEV)/psp/lib $(LIBABGSYSCALL_LIBS) -L$(PSPSDK)/lib -lSDL2 -lm -lGL -lpspvram -lpspaudio -lpspvfpu -lpspdisplay -lpspgu -lpspge -lpsphprm -lpspctrl -lpsppower -lpspdebug -lpspnet -lpspnet_apctl -Wl,-zmax-page-size=128
 else ifeq ($(PLATFORM),ps2)
