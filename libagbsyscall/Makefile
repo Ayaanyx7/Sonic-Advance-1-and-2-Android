@@ -116,7 +116,7 @@ ifeq ($(PLATFORM), android)
         LD      := $(CC1)
         AS      := $(CC1)
 
-        CC1FLAGS += --target=armv7a64-linux-androideabi$(ANDROID_API) \
+        CC1FLAGS += --target=armv7a-linux-androideabi$(ANDROID_API) \
                     --sysroot=$(ANDROID_NDK_HOME)/toolchains/llvm/prebuilt/linux-x86_64/sysroot \
                     -fPIC
 
