@@ -87,6 +87,10 @@ SHA1 	  := $(shell { command -v sha1sum || command -v shasum; } 2>/dev/null) -c
 ifeq ($(PLATFORM),gba)
 CC1       := tools/agbcc/bin/agbcc$(EXE)
 CC1_OLD   := tools/agbcc/bin/old_agbcc$(EXE)
+else ifeq ($(PLATFORM),android)
+CC1       := $(PREFIX)clang$(EXE)
+CXX       := $(PREFIX)g++$(EXE)
+CC1_OLD   := $(CC1)
 else
 CC1       := $(PREFIX)gcc$(EXE)
 CXX       := $(PREFIX)g++$(EXE)
