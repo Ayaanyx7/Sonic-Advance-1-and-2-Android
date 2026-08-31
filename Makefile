@@ -372,6 +372,7 @@ else
   CXXFLAGS += -x c++ -S
   ifeq ($(PLATFORM), android)
     CPPFLAGS += -x assembler-with-cpp -S
+  endif
 endif
 
 ### LINKER FLAGS ###
