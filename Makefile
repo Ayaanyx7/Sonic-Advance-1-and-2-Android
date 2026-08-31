@@ -101,6 +101,8 @@ CPP       := $(PREFIX)cpp
 LD        := $(PREFIX)ld
 OBJCOPY   := $(PREFIX)objcopy
 AS 		  := $(PREFIX)as
+ifeq ($(PLATFORM),android)
+AS        := $(PREFIX)clang
 
 FORMAT    := clang-format-13
 
