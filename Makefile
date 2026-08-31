@@ -370,6 +370,8 @@ else
   # Allow file input through stdin on modern gcc/g++ and set it to "compile only"
   CC1FLAGS += -x c -S
   CXXFLAGS += -x c++ -S
+  ifeq ($(PLATFORM), android)
+    CPPFLAGS += -x assembler-with-cpp -S
 endif
 
 ### LINKER FLAGS ###
