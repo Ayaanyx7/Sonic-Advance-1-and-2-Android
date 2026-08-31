@@ -286,7 +286,7 @@ else
 		CPPFLAGS += -D TITLE_BAR=$(BUILD_NAME).$(PLATFORM) -D PLATFORM_GBA=0 -D PLATFORM_SDL=1 -D PLATFORM_WIN32=0 $(shell sdl2-config --cflags)
     else ifeq ($(PLATFORM),android)
 		CC1FLAGS += -Wno-parentheses-equality -Wno-unused-value -fPIC
-		CPPFLAGS += -D TITLE_BAR=$(BUILD_NAME).$(PLATFORM) -D PLATFORM_GBA=0 -D PLATFORM_SDL=1 -D PLATFORM_WIN32=0 -I<android-project/app/jni/SDL/include>
+		CPPFLAGS += -D TITLE_BAR=$(BUILD_NAME).$(PLATFORM) -D PLATFORM_GBA=0 -D PLATFORM_SDL=1 -D PLATFORM_WIN32=0 -Iandroid-project/app/jni/SDL/include
 	else ifeq ($(PLATFORM),sdl_psp)
 		CC1FLAGS += -G0
 		CPPFLAGS += -D PLATFORM_GBA=0 -D PLATFORM_SDL=1 -D PLATFORM_WIN32=0 -D SDL_MAIN_HANDLED -I$(PSPDEV)/psp/include/SDL2 -I$(PSPDEV)/psp/include -I$(PSPSDK)/include -D_PSP_FW_VERSION=600
