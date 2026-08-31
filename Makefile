@@ -104,6 +104,7 @@ AS 		  := $(PREFIX)as
 ifeq ($(PLATFORM),android)
 AS        := $(PREFIX)clang
 LD        := $(PREFIX)clang
+endif
 
 FORMAT    := clang-format-13
 
