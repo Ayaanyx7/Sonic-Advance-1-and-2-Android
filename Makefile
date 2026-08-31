@@ -103,6 +103,7 @@ OBJCOPY   := $(PREFIX)objcopy
 AS 		  := $(PREFIX)as
 ifeq ($(PLATFORM),android)
 AS        := $(PREFIX)clang
+LD        := $(PREFIX)clang
 
 FORMAT    := clang-format-13
 
