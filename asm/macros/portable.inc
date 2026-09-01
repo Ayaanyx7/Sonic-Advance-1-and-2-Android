@@ -1,8 +1,7 @@
 .macro mSectionRodata
 #if (!CPU_ARCH_X86 && defined(__APPLE__)) // On macos, native compilation uses this name for the rodata section
   .section __DATA,__data
-#else
-#if defined(__ANDROID__)
+#elif defined(__ANDROID__)
   .section .data
 #else
   .section .rodata
