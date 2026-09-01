@@ -601,6 +601,9 @@ else ifeq ($(PLATFORM),ps2)
 	@printf "BOOT2 = cdrom0:\\$(PS2_GAME_CODE);1\nVER = 1.00\nVMODE = NTSC" > $(OBJ_DIR)/iso/SYSTEM.CNF
 	@cp $< $(OBJ_DIR)/iso/$(PS2_GAME_CODE)
 	@mkisofs -o $(ROM) $(OBJ_DIR)/iso/
+else ifeq ($(PLATFORM),android)
+    libsa2_game.a: $(OBJS)
+	$(AR) rcs $@ $(OBJS)
 else
 	$(OBJCOPY) -O pei-x86-64 $< $@
 endif
