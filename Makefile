@@ -153,9 +153,9 @@ ROM      := $(BUILD_NAME).$(PLATFORM).iso
 ELF      := $(ROM:.iso=.elf)
 MAP      := $(ROM:.iso=.map)
 else ifeq ($(PLATFORM),android)
-ROM      := $(BUILD_NAME).sdl
-ELF      := $(ROM).elf
-MAP      := $(ROM).map
+ROM      := libsa2_game.a
+ELF      := $(ROM)
+MAP      := $(ROM).android.map
 else
 ROM      := $(BUILD_NAME).$(PLATFORM).exe
 ELF      := $(ROM:.exe=.elf)
@@ -399,7 +399,7 @@ ifeq ($(PLATFORM),gba)
 else ifeq ($(PLATFORM),sdl)
     LIBS := $(shell sdl2-config --cflags --libs) $(LIBABGSYSCALL_LIBS) -lm
 else ifeq ($(PLATFORM),android)
-    LIBS :=
+    LIBS := --target=armv7a-linux-androideabi$(ANDROID_API) --sysroot=$(ANDROID_NDK_HOME)/toolchains/llvm/prebuilt/linux-x86_64/sysroot -shared -uANativeActivity_onCreate -L$(ANDROID_SDL_DIR)/build/intermediates -lSDL2 -llog -landroid $(LIBABGSYSCALL_LIBS) -lm
 else ifeq ($(PLATFORM),sdl_psp)
     LIBS := -L$(PSPDEV)/psp/lib $(LIBABGSYSCALL_LIBS) -L$(PSPSDK)/lib -lSDL2 -lm -lGL -lpspvram -lpspaudio -lpspvfpu -lpspdisplay -lpspgu -lpspge -lpsphprm -lpspctrl -lpsppower -lpspdebug -lpspnet -lpspnet_apctl -Wl,-zmax-page-size=128
 else ifeq ($(PLATFORM),ps2)
