@@ -372,7 +372,7 @@ else
   CXXFLAGS += -x c++ -S
   ifeq ($(PLATFORM), android)
     CPPFLAGS += -x assembler-with-cpp
-    $(info CPPFLAGS=$(CPPFLAGS))
+    ASFLAGS  += -x assembler
   endif
 endif
 
@@ -641,7 +641,7 @@ $(ASM_BUILDDIR)/%.o: $(ASM_SUBDIR)/%.s
 
 $(DATA_ASM_BUILDDIR)/%.o: $(DATA_ASM_SUBDIR)/%.s
 	@echo "$(AS) <flags> -o $@ $<"
-	$(PREPROC) $< $(PLATFORM) "" | $(CPP) $(CPPFLAGS) - | $(AS) $(ASFLAGS) -o $@ -
+	@$(PREPROC) $< $(PLATFORM) "" | $(CPP) $(CPPFLAGS) - | $(AS) $(ASFLAGS) -o $@ -
 
 # Scan the ASM data dependencies to determine if any .inc files have changed
 $(DATA_ASM_BUILDDIR)/%.d: $(DATA_ASM_SUBDIR)/%.s
