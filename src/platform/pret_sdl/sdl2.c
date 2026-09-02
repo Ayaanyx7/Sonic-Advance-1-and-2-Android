@@ -166,7 +166,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) < 0) {
         fprintf(stderr, "SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
         return 1;
     }
@@ -536,12 +536,88 @@ void Platform_QueueAudio(const s16 *data, uint32_t bytesCount)
 void ProcessSDLEvents(void)
 {
     SDL_Event event;
+    
+    if defined(__ANDROID__)
+    static SDL_GameController* active_gamepad = NULL;
+    endif
 
     while (SDL_PollEvent(&event)) {
         SDL_Keycode keyCode = event.key.keysym.sym;
         Uint16 keyMod = event.key.keysym.mod;
 
         switch (event.type) {
+            
+            if defined(__ANDROID__)
+            case SDL_CONTROLLERDEVICEADDED:
+                if (!active_gamepad) {
+                    active_gamepad = SDL_GameControllerOpen(event.cdevice.which);
+                }
+                break;
+
+            case SDL_CONTROLLERDEVICEREMOVED:
+                if (active_gamepad) {
+                    SDL_GameControllerClose(active_gamepad);
+                    active_gamepad = NULL;
+                }
+                break;
+
+            case SDL_CONTROLLERBUTTONDOWN:
+                switch (event.cbutton.button) {
+                    case SDL_CONTROLLER_BUTTON_A:             keys |= A_BUTTON; break;
+                    case SDL_CONTROLLER_BUTTON_B:             keys |= B_BUTTON; break;
+                    case SDL_CONTROLLER_BUTTON_START:         keys |= START_BUTTON; break;
+                    case SDL_CONTROLLER_BUTTON_BACK:          keys |= SELECT_BUTTON; break;
+                    case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:  keys |= L_BUTTON; break;
+                    case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER: keys |= R_BUTTON; break;
+                    case SDL_CONTROLLER_BUTTON_DPAD_UP:       keys |= DPAD_UP; break;
+                    case SDL_CONTROLLER_BUTTON_DPAD_DOWN:     keys |= DPAD_DOWN; break;
+                    case SDL_CONTROLLER_BUTTON_DPAD_LEFT:     keys |= DPAD_LEFT; break;
+                    case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:    keys |= DPAD_RIGHT; break;
+                }
+                break;
+
+            case SDL_CONTROLLERBUTTONUP:
+                switch (event.cbutton.button) {
+                    case SDL_CONTROLLER_BUTTON_A:             keys &= ~A_BUTTON; break;
+                    case SDL_CONTROLLER_BUTTON_B:             keys &= ~B_BUTTON; break;
+                    case SDL_CONTROLLER_BUTTON_START:         keys &= ~START_BUTTON; break;
+                    case SDL_CONTROLLER_BUTTON_BACK:          keys &= ~SELECT_BUTTON; break;
+                    case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:  keys &= ~L_BUTTON; break;
+                    case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER: keys &= ~R_BUTTON; break;
+                    case SDL_CONTROLLER_BUTTON_DPAD_UP:       keys &= ~DPAD_UP; break;
+                    case SDL_CONTROLLER_BUTTON_DPAD_DOWN:     keys &= ~DPAD_DOWN; break;
+                    case SDL_CONTROLLER_BUTTON_DPAD_LEFT:     keys &= ~DPAD_LEFT; break;
+                    case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:    keys &= ~DPAD_RIGHT; break;
+                }
+                break;
+
+            case SDL_CONTROLLERAXISMOTION:
+{
+    const int DEADZONE = 8000;
+
+    switch (event.caxis.axis)
+    {
+        case SDL_CONTROLLER_AXIS_LEFTX:
+            keys &= ~(DPAD_LEFT | DPAD_RIGHT);
+
+            if (event.caxis.value < -DEADZONE)
+                keys |= DPAD_LEFT;
+            else if (event.caxis.value > DEADZONE)
+                keys |= DPAD_RIGHT;
+            break;
+
+        case SDL_CONTROLLER_AXIS_LEFTY:
+            keys &= ~(DPAD_UP | DPAD_DOWN);
+
+            if (event.caxis.value < -DEADZONE)
+                keys |= DPAD_UP;
+            else if (event.caxis.value > DEADZONE)
+                keys |= DPAD_DOWN;
+            break;
+    }
+    break;
+}
+            endif
             case SDL_QUIT:
                 isRunning = false;
                 break;
