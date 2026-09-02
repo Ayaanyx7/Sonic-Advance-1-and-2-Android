@@ -1,3 +1,26 @@
+#ifdef __ANDROID__
+#include <SDL.h>
+#include <stdio.h>
+#include <limits.h>
+#include <string.h>
+
+FILE* android_fopen_override(const char* filename, const char* mode) {
+    char absolute_path[PATH_MAX];
+    const char* ext_storage = SDL_AndroidGetExternalStoragePath();
+    
+    // Strip redundant local subdirectory indicators if specified by the engine core loops
+    const char* clean_name = (strncmp(filename, "./", 2) == 0) ? filename + 2 : filename;
+    
+    if (ext_storage) {
+        // Automatically redirects queries into: /storage/emulated/0/Android/data/[YOUR_PACKAGE]/files/
+        snprintf(absolute_path, sizeof(absolute_path), "%s/%s", ext_storage, clean_name);
+        return fopen(absolute_path, mode);
+    }
+    return fopen(filename, mode);
+}
+#define fopen(path, mode) android_fopen_override(path, mode)
+#endif
+
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
