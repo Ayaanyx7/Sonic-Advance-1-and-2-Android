@@ -7,9 +7,10 @@ include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE    := libagbsyscall
-LOCAL_SRC_FILES := $(LOCAL_PATH)/../../../../libagbsyscall.a
+LOCAL_SRC_FILES := $(LOCAL_PATH)/../../../../libagbsyscall/build/android/libagbsyscall.a
 include $(PREBUILT_STATIC_LIBRARY)
 
+include $(CLEAR_VARS)
 LOCAL_MODULE := main
 
 SDL_PATH := SDL
