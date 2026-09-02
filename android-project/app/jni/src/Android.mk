@@ -5,17 +5,24 @@ LOCAL_MODULE    := sa2_game
 LOCAL_SRC_FILES := $(LOCAL_PATH)/../../../../libsa2_game.a
 include $(PREBUILT_STATIC_LIBRARY)
 
+include $(CLEAR_VARS)
+LOCAL_MODULE    := libagbsyscall
+LOCAL_SRC_FILES := $(LOCAL_PATH)/../../../../libagbsyscall.a
+include $(PREBUILT_STATIC_LIBRARY)
+
 LOCAL_MODULE := main
 
-SDL_PATH := ../SDL
+SDL_PATH := SDL
 
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(SDL_PATH)/include
+LOCAL_CFLAGS    := -fPIC -fpie -fno-common -DWIDESCREEN_HACK=1
 
-# Add your application source files here...
-LOCAL_SRC_FILES := YourSourceHere.c
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../../../include \
+                    $(LOCAL_PATH)/../../../../libagbsyscall
 
-LOCAL_SHARED_LIBRARIES := SDL2
-
-LOCAL_LDLIBS := -lGLESv1_CM -lGLESv2 -lOpenSLES -llog -landroid
-
+LOCAL_WHOLE_STATIC_LIBRARIES := sa2_game agbsyscall
+LOCAL_SHARED_LIBRARIES       := SDL2
+LOCAL_LDLIBS                 := -llog -landroid \
+                                -Wl,--allow-multiple-definition \
+                                -Wl,-z,muldefs \
+                                -Wl,--no-fatal-warnings
 include $(BUILD_SHARED_LIBRARY)
