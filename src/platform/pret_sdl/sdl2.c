@@ -537,9 +537,9 @@ void ProcessSDLEvents(void)
 {
     SDL_Event event;
     
-    if defined(__ANDROID__)
+    #if defined(__ANDROID__)
     static SDL_GameController* active_gamepad = NULL;
-    endif
+    #endif
 
     while (SDL_PollEvent(&event)) {
         SDL_Keycode keyCode = event.key.keysym.sym;
@@ -547,7 +547,7 @@ void ProcessSDLEvents(void)
 
         switch (event.type) {
             
-            if defined(__ANDROID__)
+#if defined(__ANDROID__)
             case SDL_CONTROLLERDEVICEADDED:
                 if (!active_gamepad) {
                     active_gamepad = SDL_GameControllerOpen(event.cdevice.which);
@@ -617,7 +617,7 @@ void ProcessSDLEvents(void)
     }
     break;
 }
-            endif
+#endif
             case SDL_QUIT:
                 isRunning = false;
                 break;
