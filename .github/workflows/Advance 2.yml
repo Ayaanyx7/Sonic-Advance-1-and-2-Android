@@ -33,11 +33,17 @@ jobs:
         run: |
           make tools
           make PLATFORM=android chao_garden/mb_chao_garden.gba.lz
-      - name: Fetch SDL2 source for Android build
+      - name: Fetch SDL2 and SDL2_image sources for Android build
         run: |
-         curl -L https://github.com/libsdl-org/SDL/releases/download/release-2.30.11/SDL2-2.30.11.tar.gz -o SDL2.tar.gz
-         mkdir -p android-project/app/jni/SDL
-         tar -xzf SDL2.tar.gz -C android-project/app/jni/SDL --strip-components=1
+          # SDL2
+          curl -L https://github.com/libsdl-org/SDL/releases/download/release-2.30.11/SDL2-2.30.11.tar.gz -o SDL2.tar.gz
+          mkdir -p android-project/app/jni/SDL
+          tar -xzf SDL2.tar.gz -C android-project/app/jni/SDL --strip-components=1
+
+          # SDL2_image
+          curl -L https://github.com/libsdl-org/SDL_image/releases/download/release-2.8.8/SDL2_image-2.8.8.tar.gz -o SDL2_image.tar.gz
+          mkdir -p android-project/app/jni/SDL_image
+          tar -xzf SDL2_image.tar.gz -C android-project/app/jni/SDL_image --strip-components=1
       # STAGE 1: Explicitly pass NDK cross-compilers to the Makefile
       - name: Compile Game Assets and Native Tools
         run: |
