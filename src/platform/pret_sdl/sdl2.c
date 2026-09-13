@@ -1,5 +1,6 @@
 #ifdef __ANDROID__
-#include <SDL.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include <stdio.h>
 #include <limits.h>
 #include <string.h>
@@ -561,6 +562,10 @@ void ProcessSDLEvents(void)
     SDL_Event event;
     
     #if defined(__ANDROID__)
+    if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG)
+{
+    SDL_Log("SDL_image PNG initialization failed: %s", IMG_GetError());
+}
     static SDL_GameController* active_gamepad = NULL;
     #endif
 
@@ -573,6 +578,10 @@ void ProcessSDLEvents(void)
 #if defined(__ANDROID__)
 static SDL_FingerID a_touch_finger = -1;
 static SDL_FingerID b_touch_finger = -1;
+static SDL_FingerID l_touch_finger = -1;
+static SDL_FingerID r_touch_finger = -1;
+static SDL_FingerID start_touch_finger = -1;
+static SDL_FingerID select_touch_finger = -1;
             
             case SDL_CONTROLLERDEVICEADDED:
                 if (!active_gamepad) {
@@ -647,30 +656,73 @@ case SDL_FINGERDOWN:
 {
     float x = event.tfinger.x;
     float y = event.tfinger.y;
+    SDL_FingerID finger = event.tfinger.fingerId;
 
-    /* A */
+    /* A button */
     if (x > 0.72f && y > 0.55f && y < 0.80f)
     {
         if (a_touch_finger == -1)
         {
-            a_touch_finger = event.tfinger.fingerId;
+            a_touch_finger = finger;
             keys |= A_BUTTON;
         }
     }
 
-    /* B */
+    /* B button */
     else if (x > 0.52f && x < 0.72f &&
              y > 0.65f && y < 0.90f)
     {
         if (b_touch_finger == -1)
         {
-            b_touch_finger = event.tfinger.fingerId;
+            b_touch_finger = finger;
             keys |= B_BUTTON;
+        }
+    }
+
+    /* L button */
+    else if (x < 0.20f && y < 0.25f)
+    {
+        if (l_touch_finger == -1)
+        {
+            l_touch_finger = finger;
+            keys |= L_BUTTON;
+        }
+    }
+
+    /* R button */
+    else if (x > 0.80f && y < 0.25f)
+    {
+        if (r_touch_finger == -1)
+        {
+            r_touch_finger = finger;
+            keys |= R_BUTTON;
+        }
+    }
+
+    /* Start */
+    else if (x > 0.62f && x < 0.80f &&
+             y > 0.15f && y < 0.35f)
+    {
+        if (start_touch_finger == -1)
+        {
+            start_touch_finger = finger;
+            keys |= START_BUTTON;
+        }
+    }
+
+    /* Select */
+    else if (x > 0.45f && x < 0.62f &&
+             y > 0.15f && y < 0.35f)
+    {
+        if (select_touch_finger == -1)
+        {
+            select_touch_finger = finger;
+            keys |= SELECT_BUTTON;
         }
     }
 }
 break;
-
+            
 case SDL_FINGERUP:
 {
     SDL_FingerID finger = event.tfinger.fingerId;
@@ -685,6 +737,30 @@ case SDL_FINGERUP:
     {
         b_touch_finger = -1;
         keys &= ~B_BUTTON;
+    }
+
+    if (l_touch_finger == finger)
+    {
+        l_touch_finger = -1;
+        keys &= ~L_BUTTON;
+    }
+
+    if (r_touch_finger == finger)
+    {
+        r_touch_finger = -1;
+        keys &= ~R_BUTTON;
+    }
+
+    if (start_touch_finger == finger)
+    {
+        start_touch_finger = -1;
+        keys &= ~START_BUTTON;
+    }
+
+    if (select_touch_finger == finger)
+    {
+        select_touch_finger = -1;
+        keys &= ~SELECT_BUTTON;
     }
 }
 break;
