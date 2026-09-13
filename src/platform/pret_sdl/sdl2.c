@@ -643,15 +643,12 @@ static SDL_FingerID b_touch_finger = -1;
     }
     break;
 }
-        case SDL_FINGERDOWN:
+case SDL_FINGERDOWN:
 {
     float x = event.tfinger.x;
     float y = event.tfinger.y;
 
-    /*
-     * Temporary A/B touch areas.*/
-
-    /* A button */
+    /* A */
     if (x > 0.72f && y > 0.55f && y < 0.80f)
     {
         if (a_touch_finger == -1)
@@ -661,8 +658,9 @@ static SDL_FingerID b_touch_finger = -1;
         }
     }
 
-    /* B button */
-    else if (x > 0.52f && x < 0.72f && y > 0.65f && y < 0.90f)
+    /* B */
+    else if (x > 0.52f && x < 0.72f &&
+             y > 0.65f && y < 0.90f)
     {
         if (b_touch_finger == -1)
         {
