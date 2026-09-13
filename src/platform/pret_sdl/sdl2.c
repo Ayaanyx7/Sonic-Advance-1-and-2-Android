@@ -571,6 +571,9 @@ void ProcessSDLEvents(void)
         switch (event.type) {
             
 #if defined(__ANDROID__)
+static SDL_FingerID a_touch_finger = -1;
+static SDL_FingerID b_touch_finger = -1;
+            
             case SDL_CONTROLLERDEVICEADDED:
                 if (!active_gamepad) {
                     active_gamepad = SDL_GameControllerOpen(event.cdevice.which);
@@ -640,6 +643,53 @@ void ProcessSDLEvents(void)
     }
     break;
 }
+        case SDL_FINGERDOWN:
+{
+    float x = event.tfinger.x;
+    float y = event.tfinger.y;
+
+    /*
+     * Temporary A/B touch areas.*/
+
+    /* A button */
+    if (x > 0.72f && y > 0.55f && y < 0.80f)
+    {
+        if (a_touch_finger == -1)
+        {
+            a_touch_finger = event.tfinger.fingerId;
+            keys |= A_BUTTON;
+        }
+    }
+
+    /* B button */
+    else if (x > 0.52f && x < 0.72f && y > 0.65f && y < 0.90f)
+    {
+        if (b_touch_finger == -1)
+        {
+            b_touch_finger = event.tfinger.fingerId;
+            keys |= B_BUTTON;
+        }
+    }
+}
+break;
+
+case SDL_FINGERUP:
+{
+    SDL_FingerID finger = event.tfinger.fingerId;
+
+    if (a_touch_finger == finger)
+    {
+        a_touch_finger = -1;
+        keys &= ~A_BUTTON;
+    }
+
+    if (b_touch_finger == finger)
+    {
+        b_touch_finger = -1;
+        keys &= ~B_BUTTON;
+    }
+}
+break;
 #endif
             case SDL_QUIT:
                 isRunning = false;
