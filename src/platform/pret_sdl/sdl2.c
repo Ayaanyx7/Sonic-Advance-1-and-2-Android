@@ -567,7 +567,91 @@ void ProcessSDLEvents(void)
     SDL_Log("SDL_image PNG initialization failed: %s", IMG_GetError());
 }
     static SDL_GameController* active_gamepad = NULL;
+static SDL_Texture *touch_lr_texture = NULL;
+static SDL_Texture *touch_ab_texture = NULL;
+static SDL_Texture *touch_start_select_texture = NULL;
+static SDL_Texture *touch_dpad_texture = NULL;
     #endif
+
+    #if defined(__ANDROID__)
+
+static SDL_Texture *LoadTouchTexture(SDL_Renderer *renderer, const char *path)
+{
+    SDL_RWops *rw = SDL_RWFromFile(path, "rb");
+
+    if (!rw)
+    {
+        SDL_Log("Failed to open touch asset '%s': %s",
+                path, SDL_GetError());
+        return NULL;
+    }
+
+    SDL_Surface *surface = IMG_Load_RW(rw, 1);
+
+    if (!surface)
+    {
+        SDL_Log("Failed to load touch asset '%s': %s",
+                path, IMG_GetError());
+        return NULL;
+    }
+
+    /* The light-blue background used by the touch sprites. */
+    SDL_SetColorKey(
+        surface,
+        SDL_TRUE,
+        SDL_MapRGB(surface->format, 0, 148, 254)
+    );
+
+    SDL_Texture *texture =
+        SDL_CreateTextureFromSurface(renderer, surface);
+
+    if (!texture)
+    {
+        SDL_Log("Failed to create touch texture '%s': %s",
+                path, SDL_GetError());
+    }
+    else
+    {
+        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+    }
+
+    SDL_FreeSurface(surface);
+
+    return texture;
+}
+
+touch_lr_texture =
+    LoadTouchTexture(renderer, "touch/L & R buttons.png");
+
+touch_ab_texture =
+    LoadTouchTexture(renderer, "touch/A & B buttons.png");
+
+touch_start_select_texture =
+    LoadTouchTexture(renderer, "touch/start and select.png");
+
+touch_dpad_texture =
+    LoadTouchTexture(renderer, "touch/Dpad stuff.png");
+
+SDL_Rect srcA = { 0,   0, 384, 335 };
+SDL_Rect srcB = { 768, 0, 384, 335 };
+
+SDL_Rect dstA = {
+    DISPLAY_WIDTH - 90,
+    DISPLAY_HEIGHT - 65,
+    70,
+    61
+};
+
+SDL_Rect dstB = {
+    DISPLAY_WIDTH - 150,
+    DISPLAY_HEIGHT - 90,
+    70,
+    61
+};
+
+SDL_RenderCopy(renderer, touch_ab_texture, &srcA, &dstA);
+SDL_RenderCopy(renderer, touch_ab_texture, &srcB, &dstB);
+#endif
 
     while (SDL_PollEvent(&event)) {
         SDL_Keycode keyCode = event.key.keysym.sym;
