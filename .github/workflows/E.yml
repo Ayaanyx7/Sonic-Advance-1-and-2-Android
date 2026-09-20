@@ -1,4 +1,4 @@
-name: Build Sonic Advance 2 Android APK
+name: SA2 Android Debug Tests
 
 on:
   workflow_dispatch:
