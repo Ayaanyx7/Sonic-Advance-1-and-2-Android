@@ -20,6 +20,64 @@ FILE* android_fopen_override(const char* filename, const char* mode) {
     return fopen(filename, mode);
 }
 #define fopen(path, mode) android_fopen_override(path, mode)
+
+static SDL_GameController *active_gamepad = NULL;
+
+static SDL_Texture *touch_lr_texture = NULL;
+static SDL_Texture *touch_ab_texture = NULL;
+static SDL_Texture *touch_start_select_texture = NULL;
+static SDL_Texture *touch_dpad_texture = NULL;
+
+static SDL_FingerID a_touch_finger = -1;
+static SDL_FingerID b_touch_finger = -1;
+static SDL_FingerID l_touch_finger = -1;
+static SDL_FingerID r_touch_finger = -1;
+static SDL_FingerID start_touch_finger = -1;
+static SDL_FingerID select_touch_finger = -1;
+
+static SDL_Texture *LoadTouchTexture(SDL_Renderer *renderer, const char *path)
+{
+    SDL_RWops *rw = SDL_RWFromFile(path, "rb");
+
+    if (!rw)
+    {
+        SDL_Log("Failed to open touch asset '%s': %s",
+                path, SDL_GetError());
+        return NULL;
+    }
+
+    SDL_Surface *surface = IMG_Load_RW(rw, 1);
+
+    if (!surface)
+    {
+        SDL_Log("Failed to load touch asset '%s': %s",
+                path, IMG_GetError());
+        return NULL;
+    }
+
+    SDL_SetColorKey(
+        surface,
+        SDL_TRUE,
+        SDL_MapRGB(surface->format, 0, 148, 254)
+    );
+
+    SDL_Texture *texture =
+        SDL_CreateTextureFromSurface(renderer, surface);
+
+    if (!texture)
+    {
+        SDL_Log("Failed to create touch texture '%s': %s",
+                path, SDL_GetError());
+    }
+    else
+    {
+        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+    }
+
+    SDL_FreeSurface(surface);
+
+    return texture;
+}
 #endif
 
 #include <assert.h>
@@ -191,9 +249,16 @@ int main(int argc, char **argv)
     }
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) < 0) {
-        fprintf(stderr, "SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
-        return 1;
-    }
+    fprintf(stderr, "SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
+    return 1;
+}
+
+#ifdef __ANDROID__
+if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
+    SDL_Log("SDL_image PNG initialization failed: %s", IMG_GetError());
+    return 1;
+}
+#endif
 
 #ifdef __PSP__
     if (SDL_NumJoysticks() > 0) {
