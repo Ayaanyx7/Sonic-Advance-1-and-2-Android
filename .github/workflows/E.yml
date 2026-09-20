@@ -115,4 +115,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: sonic-advance-2-debug-apk
-          path: android-project/app/build/outputs/apk/release/*.apk
+          path: android-project/app/build/outputs/apk/debug/*.apk
