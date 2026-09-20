@@ -479,70 +479,36 @@ void VBlankIntrWait(void)
         SDL_RenderCopy(sdlRenderer, sdlTexture, NULL, NULL);
 
 #ifdef __ANDROID__
+SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
 
-/* --- A + B BUTTONS (A closer to middle) --- */
-SDL_Rect srcA = { 0,   0, 384, 335 };
-SDL_Rect srcB = { 768, 0, 384, 335 };
+SDL_Rect srcA = { 0,   0, 384, 335 }; 
+SDL_Rect srcB = { 768, 0, 384, 335 }; 
 
-dstA = (SDL_Rect){
-    DISPLAY_WIDTH - 190,
-    DISPLAY_HEIGHT - 130,
-    90, 
-    78                    
-};
-
-dstB = (SDL_Rect){
-    DISPLAY_WIDTH - 110,  
-    DISPLAY_HEIGHT - 95,  
-    90, 
-    78
-};
+dstA = (SDL_Rect){ DISPLAY_WIDTH - 75, DISPLAY_HEIGHT - 55, 32, 28 }; 
+dstB = (SDL_Rect){ DISPLAY_WIDTH - 40, DISPLAY_HEIGHT - 40, 32, 28 }; 
 
 SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcA, &dstA);
 SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcB, &dstB);
 
-
-/* --- L + R BUMPERS --- */
 SDL_Rect srcL = { 0, 0,   384, 372 }; 
 SDL_Rect srcR = { 0, 372, 384, 372 }; 
 
-dstL = (SDL_Rect){
-    15, 15,
-    95, 92 
-};
-
-dstR = (SDL_Rect){
-    DISPLAY_WIDTH - 110,
-    15,
-    95, 92 
-};
+dstL = (SDL_Rect){ 10, 10, 35, 34 };
+dstR = (SDL_Rect){ DISPLAY_WIDTH - 45, 10, 35, 34 };
 
 SDL_RenderCopy(sdlRenderer, touch_lr_texture, &srcL, &dstL);
 SDL_RenderCopy(sdlRenderer, touch_lr_texture, &srcR, &dstR);
 
-
-/* --- START + SELECT --- */
 int halfImgW = 16; 
 int imgH     = 16;
-
 SDL_Rect srcStart  = { 0,        0, halfImgW, imgH }; 
 SDL_Rect srcSelect = { halfImgW, 0, halfImgW, imgH }; 
 
-dstStart = (SDL_Rect){
-    (DISPLAY_WIDTH / 2) - 55, 
-    15,
-    45, 45                   
-};
-
-dstSelect = (SDL_Rect){
-    (DISPLAY_WIDTH / 2) + 10, 
-    15,
-    45, 45
-};
+dstStart  = (SDL_Rect){ (DISPLAY_WIDTH / 2) - 25, 10, 16, 16 };
+dstSelect = (SDL_Rect){ (DISPLAY_WIDTH / 2) + 10, 10, 16, 16 };
 
 SDL_RenderCopy(sdlRenderer, touch_start_select_texture, &srcStart, &dstStart);
 SDL_RenderCopy(sdlRenderer, touch_start_select_texture, &srcSelect, &dstSelect);
-
 #endif
 
 SDL_RenderPresent(sdlRenderer);
@@ -803,108 +769,47 @@ case SDL_FINGERMOTION:
     float y = event.tfinger.y;
     SDL_FingerID finger = event.tfinger.fingerId;
 
-    /* A Button Hitbox */
-    float a_xmin = (float)dstA.x / DISPLAY_WIDTH;
-    float a_xmax = (float)(dstA.x + dstA.w) / DISPLAY_WIDTH;
-    float a_ymin = (float)dstA.y / DISPLAY_HEIGHT;
-    float a_ymax = (float)(dstA.y + dstA.h) / DISPLAY_HEIGHT;
+    // Process A Button
+    if (x >= (float)dstA.x/DISPLAY_WIDTH && x <= (float)(dstA.x+dstA.w)/DISPLAY_WIDTH &&
+        y >= (float)dstA.y/DISPLAY_HEIGHT && y <= (float)(dstA.y+dstA.h)/DISPLAY_HEIGHT) {
+        if (a_touch_finger == -1 || a_touch_finger == finger) { a_touch_finger = finger; keys |= A_BUTTON; }
+    } else if (a_touch_finger == finger) { a_touch_finger = -1; keys &= ~A_BUTTON; }
 
-    if (x >= a_xmin && x <= a_xmax && y >= a_ymin && y <= a_ymax) {
-        if (a_touch_finger == -1 || a_touch_finger == finger) {
-            a_touch_finger = finger;
-            keys |= A_BUTTON;
-        }
-    } else if (a_touch_finger == finger) {
-        a_touch_finger = -1;
-        keys &= ~A_BUTTON;
-    }
+    // Process B Button
+    if (x >= (float)dstB.x/DISPLAY_WIDTH && x <= (float)(dstB.x+dstB.w)/DISPLAY_WIDTH &&
+        y >= (float)dstB.y/DISPLAY_HEIGHT && y <= (float)(dstB.y+dstB.h)/DISPLAY_HEIGHT) {
+        if (b_touch_finger == -1 || b_touch_finger == finger) { b_touch_finger = finger; keys |= B_BUTTON; }
+    } else if (b_touch_finger == finger) { b_touch_finger = -1; keys &= ~B_BUTTON; }
 
-    /* B Button Hitbox */
-    float b_xmin = (float)dstB.x / DISPLAY_WIDTH;
-    float b_xmax = (float)(dstB.x + dstB.w) / DISPLAY_WIDTH;
-    float b_ymin = (float)dstB.y / DISPLAY_HEIGHT;
-    float b_ymax = (float)(dstB.y + dstB.h) / DISPLAY_HEIGHT;
+    // Process L Bumper
+    if (x >= (float)dstL.x/DISPLAY_WIDTH && x <= (float)(dstL.x+dstL.w)/DISPLAY_WIDTH &&
+        y >= (float)dstL.y/DISPLAY_HEIGHT && y <= (float)(dstL.y+dstL.h)/DISPLAY_HEIGHT) {
+        if (l_touch_finger == -1 || l_touch_finger == finger) { l_touch_finger = finger; keys |= L_BUTTON; }
+    } else if (l_touch_finger == finger) { l_touch_finger = -1; keys &= ~L_BUTTON; }
 
-    if (x >= b_xmin && x <= b_xmax && y >= b_ymin && y <= b_ymax) {
-        if (b_touch_finger == -1 || b_touch_finger == finger) {
-            b_touch_finger = finger;
-            keys |= B_BUTTON;
-        }
-    } else if (b_touch_finger == finger) {
-        b_touch_finger = -1;
-        keys &= ~B_BUTTON;
-    }
+    // Process R Bumper
+    if (x >= (float)dstR.x/DISPLAY_WIDTH && x <= (float)(dstR.x+dstR.w)/DISPLAY_WIDTH &&
+        y >= (float)dstR.y/DISPLAY_HEIGHT && y <= (float)(dstR.y+dstR.h)/DISPLAY_HEIGHT) {
+        if (r_touch_finger == -1 || r_touch_finger == finger) { r_touch_finger = finger; keys |= R_BUTTON; }
+    } else if (r_touch_finger == finger) { r_touch_finger = -1; keys &= ~R_BUTTON; }
 
-    /* L Button Hitbox */
-    float l_xmin = (float)dstL.x / DISPLAY_WIDTH;
-    float l_xmax = (float)(dstL.x + dstL.w) / DISPLAY_WIDTH;
-    float l_ymin = (float)dstL.y / DISPLAY_HEIGHT;
-    float l_ymax = (float)(dstL.y + dstL.h) / DISPLAY_HEIGHT;
+    // Process Start
+    if (x >= (float)dstStart.x/DISPLAY_WIDTH && x <= (float)(dstStart.x+dstStart.w)/DISPLAY_WIDTH &&
+        y >= (float)dstStart.y/DISPLAY_HEIGHT && y <= (float)(dstStart.y+dstStart.h)/DISPLAY_HEIGHT) {
+        if (start_touch_finger == -1 || start_touch_finger == finger) { start_touch_finger = finger; keys |= START_BUTTON; }
+    } else if (start_touch_finger == finger) { start_touch_finger = -1; keys &= ~START_BUTTON; }
 
-    if (x >= l_xmin && x <= l_xmax && y >= l_ymin && y <= l_ymax) {
-        if (l_touch_finger == -1 || l_touch_finger == finger) {
-            l_touch_finger = finger;
-            keys |= L_BUTTON;
-        }
-    } else if (l_touch_finger == finger) {
-        l_touch_finger = -1;
-        keys &= ~L_BUTTON;
-    }
-
-    /* R Button Hitbox */
-    float r_xmin = (float)dstR.x / DISPLAY_WIDTH;
-    float r_xmax = (float)(dstR.x + dstR.w) / DISPLAY_WIDTH;
-    float r_ymin = (float)dstR.y / DISPLAY_HEIGHT;
-    float r_ymax = (float)(dstR.y + dstR.h) / DISPLAY_HEIGHT;
-
-    if (x >= r_xmin && x <= r_xmax && y >= r_ymin && y <= r_ymax) {
-        if (r_touch_finger == -1 || r_touch_finger == finger) {
-            r_touch_finger = finger;
-            keys |= R_BUTTON;
-        }
-    } else if (r_touch_finger == finger) {
-        r_touch_finger = -1;
-        keys &= ~R_BUTTON;
-    }
-
-    /* Start Button Hitbox */
-    float start_xmin = (float)dstStart.x / DISPLAY_WIDTH;
-    float start_xmax = (float)(dstStart.x + dstStart.w) / DISPLAY_WIDTH;
-    float start_ymin = (float)dstStart.y / DISPLAY_HEIGHT;
-    float start_ymax = (float)(dstStart.y + dstStart.h) / DISPLAY_HEIGHT;
-
-    if (x >= start_xmin && x <= start_xmax && y >= start_ymin && y <= start_ymax) {
-        if (start_touch_finger == -1 || start_touch_finger == finger) {
-            start_touch_finger = finger;
-            keys |= START_BUTTON;
-        }
-    } else if (start_touch_finger == finger) {
-        start_touch_finger = -1;
-        keys &= ~START_BUTTON;
-    }
-
-    /* Select Button Hitbox */
-    float select_xmin = (float)dstSelect.x / DISPLAY_WIDTH;
-    float select_xmax = (float)(dstSelect.x + dstSelect.w) / DISPLAY_WIDTH;
-    float select_ymin = (float)dstSelect.y / DISPLAY_HEIGHT;
-    float select_ymax = (float)(dstSelect.y + dstSelect.h) / DISPLAY_HEIGHT;
-
-    if (x >= select_xmin && x <= select_xmax && y >= select_ymin && y <= select_ymax) {
-        if (select_touch_finger == -1 || select_touch_finger == finger) {
-            select_touch_finger = finger;
-            keys |= SELECT_BUTTON;
-        }
-    } else if (select_touch_finger == finger) {
-        select_touch_finger = -1;
-        keys &= ~SELECT_BUTTON;
-    }
+    // Process Select
+    if (x >= (float)dstSelect.x/DISPLAY_WIDTH && x <= (float)(dstSelect.x+dstSelect.w)/DISPLAY_WIDTH &&
+        y >= (float)dstSelect.y/DISPLAY_HEIGHT && y <= (float)(dstSelect.y+dstSelect.h)/DISPLAY_HEIGHT) {
+        if (select_touch_finger == -1 || select_touch_finger == finger) { select_touch_finger = finger; keys |= SELECT_BUTTON; }
+    } else if (select_touch_finger == finger) { select_touch_finger = -1; keys &= ~SELECT_BUTTON; }
 }
 break;
 
 case SDL_FINGERUP:
 {
     SDL_FingerID finger = event.tfinger.fingerId;
-
     if (a_touch_finger == finger)      { a_touch_finger = -1; keys &= ~A_BUTTON; }
     if (b_touch_finger == finger)      { b_touch_finger = -1; keys &= ~B_BUTTON; }
     if (l_touch_finger == finger)      { l_touch_finger = -1; keys &= ~L_BUTTON; }
