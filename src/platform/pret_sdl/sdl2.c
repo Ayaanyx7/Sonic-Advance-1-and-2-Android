@@ -78,6 +78,12 @@ static SDL_Texture *LoadTouchTexture(SDL_Renderer *renderer, const char *path)
 
     return texture;
 }
+static SDL_Rect dstA;
+static SDL_Rect dstB;
+static SDL_Rect dstL;
+static SDL_Rect dstR;
+static SDL_Rect dstStart;
+static SDL_Rect dstSelect;
 #endif
 
 #include <assert.h>
