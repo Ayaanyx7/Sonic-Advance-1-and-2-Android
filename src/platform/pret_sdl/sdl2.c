@@ -651,6 +651,31 @@ SDL_Rect dstB = {
 
 SDL_RenderCopy(renderer, touch_ab_texture, &srcA, &dstA);
 SDL_RenderCopy(renderer, touch_ab_texture, &srcB, &dstB);
+
+SDL_Rect srcL = { 0,   0, 768, 745 };
+SDL_Rect srcR = { 768, 0, 768, 745 };
+
+SDL_Rect dstL = { 5, 5, 75, 45 };
+SDL_Rect dstR = { DISPLAY_WIDTH - 80, 5, 75, 45 };
+
+SDL_RenderCopy(renderer, touch_lr_texture, &srcL, &dstL);
+SDL_RenderCopy(renderer, touch_lr_texture, &srcR, &dstR);
+
+SDL_Rect srcStart  = { 0,   0, 768, 583 };
+SDL_Rect srcSelect = { 768, 0, 768, 583 };
+
+SDL_Rect dstStart  = { DISPLAY_WIDTH - 155, 35, 65, 30 };
+SDL_Rect dstSelect = { DISPLAY_WIDTH - 85,  35, 65, 30 };
+
+SDL_RenderCopy(renderer,
+               touch_start_select_texture,
+               &srcStart,
+               &dstStart);
+
+SDL_RenderCopy(renderer,
+               touch_start_select_texture,
+               &srcSelect,
+               &dstSelect);
 #endif
 
     while (SDL_PollEvent(&event)) {
