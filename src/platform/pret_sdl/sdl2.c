@@ -258,6 +258,18 @@ if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
     SDL_Log("SDL_image PNG initialization failed: %s", IMG_GetError());
     return 1;
 }
+    
+touch_lr_texture =
+    LoadTouchTexture(sdlRenderer, "touch/L & R buttons.png");
+
+touch_ab_texture =
+    LoadTouchTexture(sdlRenderer, "touch/A & B buttons.png");
+
+touch_start_select_texture =
+    LoadTouchTexture(sdlRenderer, "touch/start and select.png");
+
+touch_dpad_texture =
+    LoadTouchTexture(sdlRenderer, "touch/Dpad stuff.png");
 #endif
 
 #ifdef __PSP__
@@ -312,22 +324,6 @@ if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
         fprintf(stderr, "Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
         return 1;
     }
-    
-#ifdef __ANDROID__
-
-touch_lr_texture =
-    LoadTouchTexture(sdlRenderer, "touch/L & R buttons.png");
-
-touch_ab_texture =
-    LoadTouchTexture(sdlRenderer, "touch/A & B buttons.png");
-
-touch_start_select_texture =
-    LoadTouchTexture(sdlRenderer, "touch/start and select.png");
-
-touch_dpad_texture =
-    LoadTouchTexture(sdlRenderer, "touch/Dpad stuff.png");
-
-#endif
     
 #if ENABLE_VRAM_VIEW
     vramRenderer = SDL_CreateRenderer(vramWindow, -1, SDL_RENDERER_PRESENTVSYNC);
