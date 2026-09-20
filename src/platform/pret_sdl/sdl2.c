@@ -476,6 +476,85 @@ void VBlankIntrWait(void)
         SDL_RenderClear(sdlRenderer);
         SDL_RenderCopy(sdlRenderer, sdlTexture, NULL, NULL);
 
+#ifdef __ANDROID__
+
+/* A + B */
+SDL_Rect srcA = { 0,   0, 384, 335 };
+SDL_Rect srcB = { 768, 0, 384, 335 };
+
+SDL_Rect dstA = {
+    DISPLAY_WIDTH - 90,
+    DISPLAY_HEIGHT - 65,
+    70,
+    61
+};
+
+SDL_Rect dstB = {
+    DISPLAY_WIDTH - 150,
+    DISPLAY_HEIGHT - 90,
+    70,
+    61
+};
+
+SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcA, &dstA);
+SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcB, &dstB);
+
+
+/* L + R */
+SDL_Rect srcL = { 0,   0, 768, 745 };
+SDL_Rect srcR = { 768, 0, 768, 745 };
+
+SDL_Rect dstL = {
+    5, 5,
+    75, 45
+};
+
+SDL_Rect dstR = {
+    DISPLAY_WIDTH - 80,
+    5,
+    75, 45
+};
+
+SDL_RenderCopy(sdlRenderer, touch_lr_texture, &srcL, &dstL);
+SDL_RenderCopy(sdlRenderer, touch_lr_texture, &srcR, &dstR);
+
+
+/* Start + Select */
+SDL_Rect srcStart  = { 0,   0, 768, 745 };
+SDL_Rect srcSelect = { 768, 0, 768, 745 };
+
+SDL_Rect dstStart = {
+    DISPLAY_WIDTH - 155,
+    35,
+    65,
+    30
+};
+
+SDL_Rect dstSelect = {
+    DISPLAY_WIDTH - 85,
+    35,
+    65,
+    30
+};
+
+SDL_RenderCopy(
+    sdlRenderer,
+    touch_start_select_texture,
+    &srcStart,
+    &dstStart
+);
+
+SDL_RenderCopy(
+    sdlRenderer,
+    touch_start_select_texture,
+    &srcSelect,
+    &dstSelect
+);
+
+#endif
+
+SDL_RenderPresent(sdlRenderer);
+
 #if ENABLE_VRAM_VIEW
         VramDraw(vramTexture);
         SDL_RenderClear(vramRenderer);
