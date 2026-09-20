@@ -58,7 +58,7 @@ static SDL_Texture *LoadTouchTexture(SDL_Renderer *renderer, const char *path)
     SDL_SetColorKey(
         surface,
         SDL_TRUE,
-        SDL_MapRGB(surface->format, 0, 148, 254)
+        SDL_MapRGB(surface->format, 0, 148, 255)
     );
 
     SDL_Texture *texture =
