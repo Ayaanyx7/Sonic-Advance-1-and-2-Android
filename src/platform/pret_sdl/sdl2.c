@@ -475,8 +475,8 @@ void VBlankIntrWait(void)
 #ifdef __ANDROID__
 
 /* A + B */
-SDL_Rect srcA = { 0,   0, 384, 335 };
-SDL_Rect srcB = { 768, 0, 384, 335 };
+SDL_Rect srcA = { 0,   0, 55, 48 };
+SDL_Rect srcB = { 110, 0, 55, 48 };
 
 SDL_Rect dstA = {
     DISPLAY_WIDTH - 90,
@@ -497,8 +497,8 @@ SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcB, &dstB);
 
 
 /* L + R */
-SDL_Rect srcL = { 0,   0, 768, 745 };
-SDL_Rect srcR = { 768, 0, 768, 745 };
+SDL_Rect srcL = { 4,   3, 336, 216 };
+SDL_Rect srcR = { 4, 227, 336, 192 };
 
 SDL_Rect dstL = {
     5, 5,
@@ -516,8 +516,8 @@ SDL_RenderCopy(sdlRenderer, touch_lr_texture, &srcR, &dstR);
 
 
 /* Start + Select */
-SDL_Rect srcStart  = { 0,   0, 768, 745 };
-SDL_Rect srcSelect = { 768, 0, 768, 745 };
+SDL_Rect srcStart  = { 0,   0, 16, 16 };
+SDL_Rect srcSelect = { 17, 0, 16, 16 };
 
 SDL_Rect dstStart = {
     DISPLAY_WIDTH - 155,
