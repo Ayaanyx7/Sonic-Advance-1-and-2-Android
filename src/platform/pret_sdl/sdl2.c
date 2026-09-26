@@ -28,6 +28,10 @@ static SDL_Texture *touch_ab_texture = NULL;
 static SDL_Texture *touch_start_select_texture = NULL;
 static SDL_Texture *touch_dpad_texture = NULL;
 
+static int touch_lr_w = 0, touch_lr_h = 0;
+static int touch_ab_w = 0, touch_ab_h = 0;
+static int touch_ss_w = 0, touch_ss_h = 0;
+
 static SDL_FingerID a_touch_finger = -1;
 static SDL_FingerID b_touch_finger = -1;
 static SDL_FingerID l_touch_finger = -1;
@@ -335,6 +339,10 @@ int main(int argc, char **argv)
     touch_ab_texture = LoadTouchTexture(sdlRenderer, "touch/A & B buttons.png");
     touch_start_select_texture = LoadTouchTexture(sdlRenderer, "touch/start and select.png");
     touch_dpad_texture = LoadTouchTexture(sdlRenderer, "touch/Dpad stuff.png");
+
+    if (touch_lr_texture) SDL_QueryTexture(touch_lr_texture, NULL, NULL, &touch_lr_w, &touch_lr_h);
+    if (touch_ab_texture) SDL_QueryTexture(touch_ab_texture, NULL, NULL, &touch_ab_w, &touch_ab_h);
+    if (touch_start_select_texture) SDL_QueryTexture(touch_start_select_texture, NULL, NULL, &touch_ss_w, &touch_ss_h);
 #endif
     
 #if ENABLE_VRAM_VIEW
@@ -469,22 +477,38 @@ touch_start_select_texture =
 touch_dpad_texture =
     LoadTouchTexture(sdlRenderer, "touch/Dpad stuff.png");
         
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
+SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 
-        int texW = 0, texH = 0;
+        bool isLPressed = false;
+        bool isRPressed = false;
+        bool isAPressed = false;
+        bool isBPressed = false;
+
+        int numFingers = SDL_GetNumTouchFingers(SDL_GetTouchDevice(0));
+        for (int i = 0; i < numFingers; i++) {
+            SDL_Finger* f = SDL_GetTouchFinger(SDL_GetTouchDevice(0), i);
+            if (f) {
+                float tx = f->x;
+                float ty = f->y;
+
+                if (tx < 0.20f && ty < 0.25f) isLPressed = true;
+                if (tx > 0.80f && ty < 0.25f) isRPressed = true;
+                if (tx > 0.65f && tx < 0.82f && ty > 0.60f && ty < 0.85f) isAPressed = true;
+                if (tx > 0.82f && ty > 0.60f && ty < 0.85f) isBPressed = true;
+            }
+        }
 
         // ==========================================
         // 1. ---- L & R BUMPERS (Top Corners) ----
         // ==========================================
-        SDL_QueryTexture(touch_lr_texture, NULL, NULL, &texW, &texH);
-        int lrW = texW / 2;
-        int lrH = texH / 2;
+        int lrW = touch_lr_w / 2; 
+        int lrH = touch_lr_h / 2; 
 
-        SDL_Rect srcL = { (l_touch_finger != -1) ? lrW : 0,   0,   lrW, lrH };
-        SDL_Rect srcR = { (r_touch_finger != -1) ? lrW : 0,   lrH, lrW, lrH };
+        SDL_Rect srcL = { isLPressed ? lrW : 0,   0,   lrW, lrH }; 
+        SDL_Rect srcR = { isRPressed ? lrW : 0,   lrH, lrW, lrH }; 
 
-        dstL = (SDL_Rect){ 10, 10, 80, 48 };
-        dstR = (SDL_Rect){ DISPLAY_WIDTH - 90, 10, 80, 48 };
+        dstL = (SDL_Rect){ 5, 5, 85, 42 };
+        dstR = (SDL_Rect){ DISPLAY_WIDTH - 90, 5, 85, 42 };
 
         SDL_RenderCopy(sdlRenderer, touch_lr_texture, &srcL, &dstL);
         SDL_RenderCopy(sdlRenderer, touch_lr_texture, &srcR, &dstR);
@@ -493,14 +517,13 @@ touch_dpad_texture =
         // ==========================================
         // 2. ---- START & SELECT (Top Center) ----
         // ==========================================
-        SDL_QueryTexture(touch_start_select_texture, NULL, NULL, &texW, &texH);
-        int menuW = texW / 2;
+        int menuW = touch_ss_w / 2; 
 
-        SDL_Rect srcStart  = { 0,     0, menuW, texH };
-        SDL_Rect srcSelect = { menuW, 0, menuW, texH };
+        SDL_Rect srcStart  = { 0,     0, menuW, touch_ss_h }; 
+        SDL_Rect srcSelect = { menuW, 0, menuW, touch_ss_h }; 
 
-        dstSelect = (SDL_Rect){ (DISPLAY_WIDTH / 2) - 45, 15, 32, 32 };
-        dstStart  = (SDL_Rect){ (DISPLAY_WIDTH / 2) + 13, 15, 32, 32 };
+        dstSelect = (SDL_Rect){ (DISPLAY_WIDTH / 2) - 45, 12, 32, 32 };
+        dstStart  = (SDL_Rect){ (DISPLAY_WIDTH / 2) + 13, 12, 32, 32 };
 
         SDL_RenderCopy(sdlRenderer, touch_start_select_texture, &srcStart, &dstStart);
         SDL_RenderCopy(sdlRenderer, touch_start_select_texture, &srcSelect, &dstSelect);
@@ -509,20 +532,21 @@ touch_dpad_texture =
         // ==========================================
         // 3. ---- ACTION BUTTONS (A & B Swap) ----
         // ==========================================
-        SDL_QueryTexture(touch_ab_texture, NULL, NULL, &texW, &texH);
-        int btnW = texW / 4;
+        int btnW = touch_ab_w / 4; 
 
-        int frameA = (a_touch_finger != -1) ? 1 : 0;
-        int frameB = (b_touch_finger != -1) ? 3 : 2;
+        int frameA = isAPressed ? 1 : 0;
+        int frameB = isBPressed ? 3 : 2;
 
-        SDL_Rect srcA = { frameA * btnW, 0, btnW, texH };
-        SDL_Rect srcB = { frameB * btnW, 0, btnW, texH };
+        SDL_Rect srcA = { frameA * btnW, 0, btnW, touch_ab_h };
+        SDL_Rect srcB = { frameB * btnW, 0, btnW, touch_ab_h };
 
         dstA = (SDL_Rect){ DISPLAY_WIDTH - 145, DISPLAY_HEIGHT - 80, 60, 60 };
         dstB = (SDL_Rect){ DISPLAY_WIDTH - 75,  DISPLAY_HEIGHT - 80, 60, 60 };
 
         SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcA, &dstA);
         SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcB, &dstB);
+
+        SDL_RenderPresent(sdlRenderer);
 #else
 SDL_RenderPresent(sdlRenderer);
 #endif
