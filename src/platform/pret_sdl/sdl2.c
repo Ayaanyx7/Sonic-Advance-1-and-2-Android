@@ -478,6 +478,14 @@ void VBlankIntrWait(void)
         SDL_RenderClear(sdlRenderer);
         SDL_RenderCopy(sdlRenderer, sdlTexture, NULL, NULL);
 
+SDL_RenderPresent(sdlRenderer);
+
+#if ENABLE_VRAM_VIEW
+        VramDraw(vramTexture);
+        SDL_RenderClear(vramRenderer);
+        SDL_RenderCopy(vramRenderer, vramTexture, NULL, NULL);
+#endif
+
 #ifdef __ANDROID__
 SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
 
@@ -510,14 +518,7 @@ dstSelect = (SDL_Rect){ (DISPLAY_WIDTH / 2) + 10, 10, 16, 16 };
 SDL_RenderCopy(sdlRenderer, touch_start_select_texture, &srcStart, &dstStart);
 SDL_RenderCopy(sdlRenderer, touch_start_select_texture, &srcSelect, &dstSelect);
 #endif
-
-SDL_RenderPresent(sdlRenderer);
-
-#if ENABLE_VRAM_VIEW
-        VramDraw(vramTexture);
-        SDL_RenderClear(vramRenderer);
-        SDL_RenderCopy(vramRenderer, vramTexture, NULL, NULL);
-#endif
+        
         if (videoScaleChanged) {
             SDL_SetWindowSize(sdlWindow, DISPLAY_WIDTH * videoScale, DISPLAY_HEIGHT * videoScale);
             videoScaleChanged = false;
