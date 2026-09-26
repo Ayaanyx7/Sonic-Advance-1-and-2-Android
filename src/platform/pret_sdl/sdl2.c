@@ -468,15 +468,7 @@ void VBlankIntrWait(void)
 #else
         SDL_RenderClear(sdlRenderer);
         SDL_RenderCopy(sdlRenderer, sdlTexture, NULL, NULL);
-
-SDL_RenderPresent(sdlRenderer);
-
-#if ENABLE_VRAM_VIEW
-        VramDraw(vramTexture);
-        SDL_RenderClear(vramRenderer);
-        SDL_RenderCopy(vramRenderer, vramTexture, NULL, NULL);
-#endif
-
+        
 #ifdef __ANDROID__
     
 touch_lr_texture =
@@ -521,6 +513,14 @@ dstB = (SDL_Rect){ (int)(DISPLAY_WIDTH * 0.82f), (int)(DISPLAY_HEIGHT * 0.60f), 
 
 SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcA, &dstA);
 SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcB, &dstB);
+#else
+SDL_RenderPresent(sdlRenderer);
+#endif
+
+#if ENABLE_VRAM_VIEW
+        VramDraw(vramTexture);
+        SDL_RenderClear(vramRenderer);
+        SDL_RenderCopy(vramRenderer, vramTexture, NULL, NULL);
 #endif
         
         if (videoScaleChanged) {
