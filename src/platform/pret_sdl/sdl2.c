@@ -339,6 +339,18 @@ int main(int argc, char **argv)
         return 1;
     }
 
+#ifdef __ANDROID__
+    if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
+        SDL_Log("SDL_image PNG initialization failed: %s", IMG_GetError());
+        return 1; // Works perfectly here because main returns an int!
+    }
+        
+    touch_lr_texture = LoadTouchTexture(sdlRenderer, "touch/L & R buttons.png");
+    touch_ab_texture = LoadTouchTexture(sdlRenderer, "touch/A & B buttons.png");
+    touch_start_select_texture = LoadTouchTexture(sdlRenderer, "touch/start and select.png");
+    touch_dpad_texture = LoadTouchTexture(sdlRenderer, "touch/Dpad stuff.png");
+#endif
+    
 #if ENABLE_VRAM_VIEW
     vramTexture = SDL_CreateTexture(vramRenderer, SDL_PIXELFORMAT_ABGR1555, SDL_TEXTUREACCESS_STREAMING, vramWindowWidth, vramWindowHeight);
     if (vramTexture == NULL) {
@@ -466,10 +478,6 @@ SDL_RenderPresent(sdlRenderer);
 #endif
 
 #ifdef __ANDROID__
-if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
-    SDL_Log("SDL_image PNG initialization failed: %s", IMG_GetError());
-    return 1;
-}
     
 touch_lr_texture =
     LoadTouchTexture(sdlRenderer, "touch/L & R buttons.png");
