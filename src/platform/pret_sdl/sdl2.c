@@ -485,20 +485,11 @@ touch_dpad_texture =
 
 SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
 
-SDL_Rect srcA = { 0,   0, 384, 335 }; 
-SDL_Rect srcB = { 768, 0, 384, 335 }; 
-
-dstA = (SDL_Rect){ DISPLAY_WIDTH - 75, DISPLAY_HEIGHT - 55, 32, 28 }; 
-dstB = (SDL_Rect){ DISPLAY_WIDTH - 40, DISPLAY_HEIGHT - 40, 32, 28 }; 
-
-SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcA, &dstA);
-SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcB, &dstB);
-
 SDL_Rect srcL = { 0,   0, 768, 745 };
 SDL_Rect srcR = { 768, 0, 768, 745 };
 
-dstL = (SDL_Rect){ 10, 10, 35, 34 };
-dstR = (SDL_Rect){ DISPLAY_WIDTH - 45, 10, 35, 34 };
+dstL = (SDL_Rect){ 0, 0, (int)(DISPLAY_WIDTH * 0.20f), (int)(DISPLAY_HEIGHT * 0.25f) };
+dstR = (SDL_Rect){ (int)(DISPLAY_WIDTH * 0.80f), 0, (int)(DISPLAY_WIDTH * 0.20f), (int)(DISPLAY_HEIGHT * 0.25f) };
 
 SDL_RenderCopy(sdlRenderer, touch_lr_texture, &srcL, &dstL);
 SDL_RenderCopy(sdlRenderer, touch_lr_texture, &srcR, &dstR);
@@ -508,11 +499,20 @@ int imgH     = 16;
 SDL_Rect srcStart  = { 0,        0, halfImgW, imgH }; 
 SDL_Rect srcSelect = { halfImgW, 0, halfImgW, imgH }; 
 
-dstStart  = (SDL_Rect){ (DISPLAY_WIDTH / 2) - 25, 10, 16, 16 };
-dstSelect = (SDL_Rect){ (DISPLAY_WIDTH / 2) + 10, 10, 16, 16 };
+dstSelect = (SDL_Rect){ (int)(DISPLAY_WIDTH * 0.40f), 0, (int)(DISPLAY_WIDTH * 0.15f), (int)(DISPLAY_HEIGHT * 0.15f) };
+dstStart  = (SDL_Rect){ (int)(DISPLAY_WIDTH * 0.55f), 0, (int)(DISPLAY_WIDTH * 0.15f), (int)(DISPLAY_HEIGHT * 0.15f) };
 
 SDL_RenderCopy(sdlRenderer, touch_start_select_texture, &srcStart, &dstStart);
 SDL_RenderCopy(sdlRenderer, touch_start_select_texture, &srcSelect, &dstSelect);
+
+SDL_Rect srcA = { 0,   0, 384, 335 }; 
+SDL_Rect srcB = { 768, 0, 384, 335 }; 
+
+dstA = (SDL_Rect){ (int)(DISPLAY_WIDTH * 0.65f), (int)(DISPLAY_HEIGHT * 0.60f), (int)(DISPLAY_WIDTH * 0.17f), (int)(DISPLAY_HEIGHT * 0.25f) };
+dstB = (SDL_Rect){ (int)(DISPLAY_WIDTH * 0.82f), (int)(DISPLAY_HEIGHT * 0.60f), (int)(DISPLAY_WIDTH * 0.18f), (int)(DISPLAY_HEIGHT * 0.25f) };
+
+SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcA, &dstA);
+SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcB, &dstB);
 #endif
         
         if (videoScaleChanged) {
