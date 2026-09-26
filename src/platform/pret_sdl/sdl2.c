@@ -42,37 +42,23 @@ static SDL_Texture *LoadTouchTexture(SDL_Renderer *renderer, const char *path) {
         return NULL; 
     } 
 
-    SDL_Surface *surface = IMG_Load_RW(rw, 0); // Don't let SDL free it automatically
-    SDL_RWclose(rw); // Clean it up safely ourselves
+    SDL_Surface *surface = IMG_Load_RW(rw, 0); 
+    SDL_RWclose(rw); 
 
     if (!surface) { 
         SDL_Log("Failed to load touch asset %s: %s", path, IMG_GetError()); 
         return NULL; 
     } 
 
-    // ---- THE FIX FOR MICROSUTTERING: MATCH VRAM FORMAT ----
-    // Get the preferred format of your renderer/window
-    SDL_RendererInfo info;
-    SDL_GetRendererInfo(renderer, &info);
-    Uint32 preferred_format = (info.num_texture_formats > 0) ? info.texture_formats[0] : surface->format->format;
-
-    // Convert the surface to matching GPU pixel architecture 
-    SDL_Surface *optimizedSurface = SDL_ConvertSurfaceFormat(surface, preferred_format, 0);
-    SDL_FreeSurface(surface); // Free the unoptimized layout immediately
-
-    if (!optimizedSurface) {
-        return NULL;
-    }
-
-    // Create texture from the perfectly optimized surface layout
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, optimizedSurface); 
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface); 
     if (!texture) { 
         SDL_Log("Failed to create touch texture %s: %s", path, SDL_GetError()); 
     } else { 
         SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND); 
+        SDL_SetTextureAlphaMod(texture, 128); 
     } 
 
-    SDL_FreeSurface(optimizedSurface); 
+    SDL_FreeSurface(surface); 
     return texture;
 }
 
@@ -481,37 +467,62 @@ touch_start_select_texture =
     LoadTouchTexture(sdlRenderer, "touch/start and select.png");
 
 touch_dpad_texture =
-    LoadTouchTexture(sdlRenderer, "touch/Dpad stuff.png");
+    LoadTouchTexture(sdlRenderer, "touch/L & R buttons.png");
+        
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 
-SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+        int texW = 0, texH = 0;
 
-SDL_Rect srcL = { 0,   0, 384, 372 };
-SDL_Rect srcR = { 384, 0, 384, 372 };
+        // ==========================================
+        // 1. ---- L & R BUMPERS (Top Corners) ----
+        // ==========================================
+        SDL_QueryTexture(touch_lr_texture, NULL, NULL, &texW, &texH);
+        int lrW = texW / 2;
+        int lrH = texH / 2;
 
-dstL = (SDL_Rect){ 0, 0, (int)(DISPLAY_WIDTH * 0.20f), (int)(DISPLAY_HEIGHT * 0.25f) };
-dstR = (SDL_Rect){ (int)(DISPLAY_WIDTH * 0.80f), 0, (int)(DISPLAY_WIDTH * 0.20f), (int)(DISPLAY_HEIGHT * 0.25f) };
+        SDL_Rect srcL = { (l_touch_finger != -1) ? lrW : 0,   0,   lrW, lrH };
+        SDL_Rect srcR = { (r_touch_finger != -1) ? lrW : 0,   lrH, lrW, lrH };
 
-SDL_RenderCopy(sdlRenderer, touch_lr_texture, &srcL, &dstL);
-SDL_RenderCopy(sdlRenderer, touch_lr_texture, &srcR, &dstR);
+        dstL = (SDL_Rect){ 10, 10, 80, 48 };
+        dstR = (SDL_Rect){ DISPLAY_WIDTH - 90, 10, 80, 48 };
 
-int halfImgW = 16; 
-int imgH     = 16;
-SDL_Rect srcStart  = { 0,        0, halfImgW, imgH }; 
-SDL_Rect srcSelect = { halfImgW, 0, halfImgW, imgH }; 
+        SDL_RenderCopy(sdlRenderer, touch_lr_texture, &srcL, &dstL);
+        SDL_RenderCopy(sdlRenderer, touch_lr_texture, &srcR, &dstR);
 
-dstSelect = (SDL_Rect){ (int)(DISPLAY_WIDTH * 0.40f), 0, (int)(DISPLAY_WIDTH * 0.15f), (int)(DISPLAY_HEIGHT * 0.12f) };
-dstStart  = (SDL_Rect){ (int)(DISPLAY_WIDTH * 0.55f), 0, (int)(DISPLAY_WIDTH * 0.15f), (int)(DISPLAY_HEIGHT * 0.12f) };
 
-SDL_RenderCopy(sdlRenderer, touch_start_select_texture, &srcStart, &dstStart);
-SDL_RenderCopy(sdlRenderer, touch_start_select_texture, &srcSelect, &dstSelect);
+        // ==========================================
+        // 2. ---- START & SELECT (Top Center) ----
+        // ==========================================
+        SDL_QueryTexture(touch_start_select_texture, NULL, NULL, &texW, &texH);
+        int menuW = texW / 2;
 
-SDL_Rect srcA = { 0,   0, 192, 335 };
-SDL_Rect srcB = { 192, 0, 192, 335 };
-dstA = (SDL_Rect){ (int)(DISPLAY_WIDTH * 0.65f), (int)(DISPLAY_HEIGHT * 0.60f), (int)(DISPLAY_WIDTH * 0.15f), (int)(DISPLAY_HEIGHT * 0.25f) };
-dstB = (SDL_Rect){ (int)(DISPLAY_WIDTH * 0.82f), (int)(DISPLAY_HEIGHT * 0.60f), (int)(DISPLAY_WIDTH * 0.15f), (int)(DISPLAY_HEIGHT * 0.25f) };
+        SDL_Rect srcStart  = { 0,     0, menuW, texH };
+        SDL_Rect srcSelect = { menuW, 0, menuW, texH };
 
-SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcA, &dstA);
-SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcB, &dstB);
+        dstSelect = (SDL_Rect){ (DISPLAY_WIDTH / 2) - 45, 15, 32, 32 };
+        dstStart  = (SDL_Rect){ (DISPLAY_WIDTH / 2) + 13, 15, 32, 32 };
+
+        SDL_RenderCopy(sdlRenderer, touch_start_select_texture, &srcStart, &dstStart);
+        SDL_RenderCopy(sdlRenderer, touch_start_select_texture, &srcSelect, &dstSelect);
+
+
+        // ==========================================
+        // 3. ---- ACTION BUTTONS (A & B Swap) ----
+        // ==========================================
+        SDL_QueryTexture(touch_ab_texture, NULL, NULL, &texW, &texH);
+        int btnW = texW / 4;
+
+        int frameA = (a_touch_finger != -1) ? 1 : 0;
+        int frameB = (b_touch_finger != -1) ? 3 : 2;
+
+        SDL_Rect srcA = { frameA * btnW, 0, btnW, texH };
+        SDL_Rect srcB = { frameB * btnW, 0, btnW, texH };
+
+        dstA = (SDL_Rect){ DISPLAY_WIDTH - 145, DISPLAY_HEIGHT - 80, 60, 60 };
+        dstB = (SDL_Rect){ DISPLAY_WIDTH - 75,  DISPLAY_HEIGHT - 80, 60, 60 };
+
+        SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcA, &dstA);
+        SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcB, &dstB);
 #else
 SDL_RenderPresent(sdlRenderer);
 #endif
