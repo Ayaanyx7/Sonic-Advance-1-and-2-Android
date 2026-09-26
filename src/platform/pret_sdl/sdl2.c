@@ -467,7 +467,7 @@ touch_start_select_texture =
     LoadTouchTexture(sdlRenderer, "touch/start and select.png");
 
 touch_dpad_texture =
-    LoadTouchTexture(sdlRenderer, "touch/L & R buttons.png");
+    LoadTouchTexture(sdlRenderer, "touch/Dpad stuff.png");
         
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 
