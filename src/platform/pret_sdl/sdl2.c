@@ -35,49 +35,47 @@ static SDL_FingerID r_touch_finger = -1;
 static SDL_FingerID start_touch_finger = -1;
 static SDL_FingerID select_touch_finger = -1;
 
-static SDL_Texture *LoadTouchTexture(SDL_Renderer *renderer, const char *path)
-{
-    SDL_RWops *rw = SDL_RWFromFile(path, "rb");
+static SDL_Texture *LoadTouchTexture(SDL_Renderer *renderer, const char *path) { 
+    SDL_RWops *rw = SDL_RWFromFile(path, "rb"); 
+    if (!rw) { 
+        SDL_Log("Failed to open touch asset %s: %s", path, SDL_GetError()); 
+        return NULL; 
+    } 
 
-    if (!rw)
-    {
-        SDL_Log("Failed to open touch asset '%s': %s",
-                path, SDL_GetError());
+    SDL_Surface *surface = IMG_Load_RW(rw, 0); // Don't let SDL free it automatically
+    SDL_RWclose(rw); // Clean it up safely ourselves
+
+    if (!surface) { 
+        SDL_Log("Failed to load touch asset %s: %s", path, IMG_GetError()); 
+        return NULL; 
+    } 
+
+    // ---- THE FIX FOR MICROSUTTERING: MATCH VRAM FORMAT ----
+    // Get the preferred format of your renderer/window
+    SDL_RendererInfo info;
+    SDL_GetRendererInfo(renderer, &info);
+    Uint32 preferred_format = (info.num_texture_formats > 0) ? info.texture_formats[0] : surface->format->format;
+
+    // Convert the surface to matching GPU pixel architecture 
+    SDL_Surface *optimizedSurface = SDL_ConvertSurfaceFormat(surface, preferred_format, 0);
+    SDL_FreeSurface(surface); // Free the unoptimized layout immediately
+
+    if (!optimizedSurface) {
         return NULL;
     }
 
-    SDL_Surface *surface = IMG_Load_RW(rw, 1);
+    // Create texture from the perfectly optimized surface layout
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, optimizedSurface); 
+    if (!texture) { 
+        SDL_Log("Failed to create touch texture %s: %s", path, SDL_GetError()); 
+    } else { 
+        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND); 
+    } 
 
-    if (!surface)
-    {
-        SDL_Log("Failed to load touch asset '%s': %s",
-                path, IMG_GetError());
-        return NULL;
-    }
-
-    SDL_SetColorKey(
-        surface,
-        SDL_TRUE,
-        SDL_MapRGB(surface->format, 0, 148, 255)
-    );
-
-    SDL_Texture *texture =
-        SDL_CreateTextureFromSurface(renderer, surface);
-
-    if (!texture)
-    {
-        SDL_Log("Failed to create touch texture '%s': %s",
-                path, SDL_GetError());
-    }
-    else
-    {
-        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-    }
-
-    SDL_FreeSurface(surface);
-
+    SDL_FreeSurface(optimizedSurface); 
     return texture;
 }
+
 static SDL_Rect dstA;
 static SDL_Rect dstB;
 static SDL_Rect dstL;
