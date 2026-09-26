@@ -479,36 +479,17 @@ touch_dpad_texture =
         
 SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 
-        bool isLPressed = false;
-        bool isRPressed = false;
-        bool isAPressed = false;
-        bool isBPressed = false;
-
-        int numFingers = SDL_GetNumTouchFingers(SDL_GetTouchDevice(0));
-        for (int i = 0; i < numFingers; i++) {
-            SDL_Finger* f = SDL_GetTouchFinger(SDL_GetTouchDevice(0), i);
-            if (f) {
-                float tx = f->x;
-                float ty = f->y;
-
-                if (tx < 0.20f && ty < 0.25f) isLPressed = true;
-                if (tx > 0.80f && ty < 0.25f) isRPressed = true;
-                if (tx > 0.65f && tx < 0.82f && ty > 0.60f && ty < 0.85f) isAPressed = true;
-                if (tx > 0.82f && ty > 0.60f && ty < 0.85f) isBPressed = true;
-            }
-        }
-
         // ==========================================
-        // 1. ---- L & R BUMPERS (Top Corners) ----
+        // 1. ---- L & R BUMPERS (Top Corners Fixed) ----
         // ==========================================
         int lrW = touch_lr_w / 2; 
         int lrH = touch_lr_h / 2; 
 
-        SDL_Rect srcL = { isLPressed ? lrW : 0,   0,   lrW, lrH }; 
-        SDL_Rect srcR = { isRPressed ? lrW : 0,   lrH, lrW, lrH }; 
+        SDL_Rect srcL = { (l_touch_finger != -1) ? lrW : 0,   0,   lrW, lrH }; 
+        SDL_Rect srcR = { (r_touch_finger != -1) ? lrW : 0,   lrH, lrW, lrH }; 
 
-        dstL = (SDL_Rect){ 5, 5, 85, 42 };
-        dstR = (SDL_Rect){ DISPLAY_WIDTH - 90, 5, 85, 42 };
+        dstL = (SDL_Rect){ 10, 10, 80, 48 };
+        dstR = (SDL_Rect){ DISPLAY_WIDTH - 90, 10, 80, 48 };
 
         SDL_RenderCopy(sdlRenderer, touch_lr_texture, &srcL, &dstL);
         SDL_RenderCopy(sdlRenderer, touch_lr_texture, &srcR, &dstR);
@@ -534,8 +515,8 @@ SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
         // ==========================================
         int btnW = touch_ab_w / 4; 
 
-        int frameA = isAPressed ? 1 : 0;
-        int frameB = isBPressed ? 3 : 2;
+        int frameA = (a_touch_finger != -1) ? 1 : 0;
+        int frameB = (b_touch_finger != -1) ? 3 : 2;
 
         SDL_Rect srcA = { frameA * btnW, 0, btnW, touch_ab_h };
         SDL_Rect srcB = { frameB * btnW, 0, btnW, touch_ab_h };
