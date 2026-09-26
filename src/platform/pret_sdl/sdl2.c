@@ -490,8 +490,8 @@ dstB = (SDL_Rect){ DISPLAY_WIDTH - 40, DISPLAY_HEIGHT - 40, 32, 28 };
 SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcA, &dstA);
 SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcB, &dstB);
 
-SDL_Rect srcL = { 0, 0,   384, 372 }; 
-SDL_Rect srcR = { 0, 372, 384, 372 }; 
+SDL_Rect srcL = { 0,   0, 768, 745 };
+SDL_Rect srcR = { 768, 0, 768, 745 };
 
 dstL = (SDL_Rect){ 10, 10, 35, 34 };
 dstR = (SDL_Rect){ DISPLAY_WIDTH - 45, 10, 35, 34 };
