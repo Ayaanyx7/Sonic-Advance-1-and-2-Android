@@ -482,9 +482,6 @@ void VBlankIntrWait(void)
 
 SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 
-        // ==========================
-        // 1. ---- L & R BUMPERS ----
-        // ==========================
         #define LR_GRID_W 688
 
         int lrW = LR_GRID_W / 2;
@@ -499,15 +496,11 @@ SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 
         SDL_RenderCopy(sdlRenderer, touch_lr_texture, &srcL, &dstL);
         SDL_RenderCopy(sdlRenderer, touch_lr_texture, &srcR, &dstR);
-
-
-        // ===========================
-        // 2. ---- START & SELECT ----
-        // ===========================
-        int menuW = touch_ss_w / 2; 
-
-        SDL_Rect srcStart  = { 0,     0, menuW, touch_ss_h }; 
-        SDL_Rect srcSelect = { menuW, 0, menuW, touch_ss_h }; 
+        
+        int menuW = touch_ss_w / 2;
+        
+        SDL_Rect srcStart  = { 0, 0, menuW, touch_ss_h };         
+        SDL_Rect srcSelect = { touch_ss_w - menuW, 0, menuW, touch_ss_h };
 
         dstSelect = (SDL_Rect){ (DISPLAY_WIDTH / 2) - 45, 12, 32, 32 };
         dstStart  = (SDL_Rect){ (DISPLAY_WIDTH / 2) + 13, 12, 32, 32 };
@@ -515,10 +508,6 @@ SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
         SDL_RenderCopy(sdlRenderer, touch_start_select_texture, &srcStart, &dstStart);
         SDL_RenderCopy(sdlRenderer, touch_start_select_texture, &srcSelect, &dstSelect);
 
-
-        // ============================
-        // 3. ---- A and B Buttons ----
-        // ============================
         int btnW = touch_ab_w / 4; 
 
         int frameA = (a_touch_finger != -1) ? 1 : 0;
