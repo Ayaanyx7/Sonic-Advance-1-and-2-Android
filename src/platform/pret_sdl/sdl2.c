@@ -343,68 +343,7 @@ int main(int argc, char **argv)
     if (touch_lr_texture) SDL_QueryTexture(touch_lr_texture, NULL, NULL, &touch_lr_w, &touch_lr_h);
     if (touch_ab_texture) SDL_QueryTexture(touch_ab_texture, NULL, NULL, &touch_ab_w, &touch_ab_h);
     if (touch_start_select_texture) SDL_QueryTexture(touch_start_select_texture, NULL, NULL, &touch_ss_w, &touch_ss_h);
-
-    touch_lr_texture =
-    LoadTouchTexture(sdlRenderer, "touch/L & R buttons.png");
-
-touch_ab_texture =
-    LoadTouchTexture(sdlRenderer, "touch/A & B buttons.png");
-
-touch_start_select_texture =
-    LoadTouchTexture(sdlRenderer, "touch/start and select.png");
-
-touch_dpad_texture =
-    LoadTouchTexture(sdlRenderer, "touch/Dpad stuff.png");
         
-SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
-
-        // ==========================================
-        // 1. ---- L & R BUMPERS (Top Corners Fixed) ----
-        // ==========================================
-        int lrW = touch_lr_w / 2; 
-        int lrH = touch_lr_h / 2; 
-
-        SDL_Rect srcL = { (l_touch_finger != -1) ? lrW : 0,   0,   lrW, lrH }; 
-        SDL_Rect srcR = { (r_touch_finger != -1) ? lrW : 0,   lrH, lrW, lrH }; 
-
-        dstL = (SDL_Rect){ 10, 10, 80, 48 };
-        dstR = (SDL_Rect){ DISPLAY_WIDTH - 90, 10, 80, 48 };
-
-        SDL_RenderCopy(sdlRenderer, touch_lr_texture, &srcL, &dstL);
-        SDL_RenderCopy(sdlRenderer, touch_lr_texture, &srcR, &dstR);
-
-
-        // ==========================================
-        // 2. ---- START & SELECT (Top Center) ----
-        // ==========================================
-        int menuW = touch_ss_w / 2; 
-
-        SDL_Rect srcStart  = { 0,     0, menuW, touch_ss_h }; 
-        SDL_Rect srcSelect = { menuW, 0, menuW, touch_ss_h }; 
-
-        dstSelect = (SDL_Rect){ (DISPLAY_WIDTH / 2) - 45, 12, 32, 32 };
-        dstStart  = (SDL_Rect){ (DISPLAY_WIDTH / 2) + 13, 12, 32, 32 };
-
-        SDL_RenderCopy(sdlRenderer, touch_start_select_texture, &srcStart, &dstStart);
-        SDL_RenderCopy(sdlRenderer, touch_start_select_texture, &srcSelect, &dstSelect);
-
-
-        // ==========================================
-        // 3. ---- ACTION BUTTONS (A & B Swap) ----
-        // ==========================================
-        int btnW = touch_ab_w / 4; 
-
-        int frameA = (a_touch_finger != -1) ? 1 : 0;
-        int frameB = (b_touch_finger != -1) ? 3 : 2;
-
-        SDL_Rect srcA = { frameA * btnW, 0, btnW, touch_ab_h };
-        SDL_Rect srcB = { frameB * btnW, 0, btnW, touch_ab_h };
-
-        dstA = (SDL_Rect){ DISPLAY_WIDTH - 145, DISPLAY_HEIGHT - 80, 60, 60 };
-        dstB = (SDL_Rect){ DISPLAY_WIDTH - 75,  DISPLAY_HEIGHT - 80, 60, 60 };
-
-        SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcA, &dstA);
-        SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcB, &dstB);
 #endif
     
 #if ENABLE_VRAM_VIEW
@@ -538,7 +477,58 @@ SDL_RenderPresent(sdlRenderer);
             SDL_SetWindowSize(sdlWindow, DISPLAY_WIDTH * videoScale, DISPLAY_HEIGHT * videoScale);
             videoScaleChanged = false;
         }
+#ifdef __ANDROID__
 
+SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
+
+        // ==========================================
+        // 1. ---- L & R BUMPERS (Top Corners Fixed) ----
+        // ==========================================
+        int lrW = touch_lr_w / 2; 
+        int lrH = touch_lr_h / 2; 
+
+        SDL_Rect srcL = { (l_touch_finger != -1) ? lrW : 0,   0,   lrW, lrH }; 
+        SDL_Rect srcR = { (r_touch_finger != -1) ? lrW : 0,   lrH, lrW, lrH }; 
+
+        dstL = (SDL_Rect){ 10, 10, 80, 48 };
+        dstR = (SDL_Rect){ DISPLAY_WIDTH - 90, 10, 80, 48 };
+
+        SDL_RenderCopy(sdlRenderer, touch_lr_texture, &srcL, &dstL);
+        SDL_RenderCopy(sdlRenderer, touch_lr_texture, &srcR, &dstR);
+
+
+        // ==========================================
+        // 2. ---- START & SELECT (Top Center) ----
+        // ==========================================
+        int menuW = touch_ss_w / 2; 
+
+        SDL_Rect srcStart  = { 0,     0, menuW, touch_ss_h }; 
+        SDL_Rect srcSelect = { menuW, 0, menuW, touch_ss_h }; 
+
+        dstSelect = (SDL_Rect){ (DISPLAY_WIDTH / 2) - 45, 12, 32, 32 };
+        dstStart  = (SDL_Rect){ (DISPLAY_WIDTH / 2) + 13, 12, 32, 32 };
+
+        SDL_RenderCopy(sdlRenderer, touch_start_select_texture, &srcStart, &dstStart);
+        SDL_RenderCopy(sdlRenderer, touch_start_select_texture, &srcSelect, &dstSelect);
+
+
+        // ==========================================
+        // 3. ---- ACTION BUTTONS (A & B Swap) ----
+        // ==========================================
+        int btnW = touch_ab_w / 4; 
+
+        int frameA = (a_touch_finger != -1) ? 1 : 0;
+        int frameB = (b_touch_finger != -1) ? 3 : 2;
+
+        SDL_Rect srcA = { frameA * btnW, 0, btnW, touch_ab_h };
+        SDL_Rect srcB = { frameB * btnW, 0, btnW, touch_ab_h };
+
+        dstA = (SDL_Rect){ DISPLAY_WIDTH - 145, DISPLAY_HEIGHT - 80, 60, 60 };
+        dstB = (SDL_Rect){ DISPLAY_WIDTH - 75,  DISPLAY_HEIGHT - 80, 60, 60 };
+
+        SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcA, &dstA);
+        SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcB, &dstB);
+#endif
         SDL_RenderPresent(sdlRenderer);
 #if ENABLE_VRAM_VIEW
         SDL_RenderPresent(vramRenderer);
@@ -702,12 +692,6 @@ void ProcessSDLEvents(void)
         switch (event.type) {
             
 #if defined(__ANDROID__)
-static SDL_FingerID a_touch_finger = -1;
-static SDL_FingerID b_touch_finger = -1;
-static SDL_FingerID l_touch_finger = -1;
-static SDL_FingerID r_touch_finger = -1;
-static SDL_FingerID start_touch_finger = -1;
-static SDL_FingerID select_touch_finger = -1;
             
             case SDL_CONTROLLERDEVICEADDED:
                 if (!active_gamepad) {
