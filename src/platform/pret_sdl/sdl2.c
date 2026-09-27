@@ -479,14 +479,16 @@ void VBlankIntrWait(void)
 
 SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 
-        // ==========================================
-        // 1. ---- L & R BUMPERS (Top Corners Fixed) ----
-        // ==========================================
-        int lrW = touch_lr_w / 2; 
-        int lrH = touch_lr_h / 2; 
+        // ==========================
+        // 1. ---- L & R BUMPERS ----
+        // ==========================
+        #define LR_GRID_W 220
+        #define LR_GRID_H 160
 
-        SDL_Rect srcL = { (l_touch_finger != -1) ? lrW : 0,   0,   lrW, lrH }; 
-        SDL_Rect srcR = { (r_touch_finger != -1) ? lrW : 0,   lrH, lrW, lrH }; 
+        int lrW = LR_GRID_W / 2;
+        int lrH = LR_GRID_H / 2;
+        SDL_Rect srcL = { (l_touch_finger != -1) ? lrW : 0, 0,   lrW, lrH };
+        SDL_Rect srcR = { (r_touch_finger != -1) ? lrW : 0, lrH, lrW, lrH };
 
         dstL = (SDL_Rect){ 10, 10, 80, 48 };
         dstR = (SDL_Rect){ DISPLAY_WIDTH - 90, 10, 80, 48 };
@@ -495,9 +497,9 @@ SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
         SDL_RenderCopy(sdlRenderer, touch_lr_texture, &srcR, &dstR);
 
 
-        // ==========================================
-        // 2. ---- START & SELECT (Top Center) ----
-        // ==========================================
+        // ===========================
+        // 2. ---- START & SELECT ----
+        // ===========================
         int menuW = touch_ss_w / 2; 
 
         SDL_Rect srcStart  = { 0,     0, menuW, touch_ss_h }; 
@@ -510,9 +512,9 @@ SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
         SDL_RenderCopy(sdlRenderer, touch_start_select_texture, &srcSelect, &dstSelect);
 
 
-        // ==========================================
-        // 3. ---- ACTION BUTTONS (A & B Swap) ----
-        // ==========================================
+        // ============================
+        // 3. ---- A and B Buttons ----
+        // ============================
         int btnW = touch_ab_w / 4; 
 
         int frameA = (a_touch_finger != -1) ? 1 : 0;
@@ -521,8 +523,8 @@ SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
         SDL_Rect srcA = { frameA * btnW, 0, btnW, touch_ab_h };
         SDL_Rect srcB = { frameB * btnW, 0, btnW, touch_ab_h };
 
-        dstA = (SDL_Rect){ DISPLAY_WIDTH - 145, DISPLAY_HEIGHT - 80, 60, 60 };
-        dstB = (SDL_Rect){ DISPLAY_WIDTH - 75,  DISPLAY_HEIGHT - 80, 60, 60 };
+        SDL_Rect dstA = { DISPLAY_WIDTH - 145 - (frameA == 1 ? 2 : 0), DISPLAY_HEIGHT - 80, 60, 60 };
+        SDL_Rect dstB = { DISPLAY_WIDTH - 75  - (frameB == 3 ? 2 : 0), DISPLAY_HEIGHT - 80, 60, 60 };
 
         SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcA, &dstA);
         SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcB, &dstB);
