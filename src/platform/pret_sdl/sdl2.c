@@ -1,4 +1,5 @@
 #ifdef __ANDROID__
+#include <math.h>
 #include <SDL.h>
 #include <SDL_image.h>
 #include <stdio.h>
@@ -32,6 +33,7 @@ static int touch_lr_w = 0, touch_lr_h = 0;
 static int touch_ab_w = 0, touch_ab_h = 0;
 static int touch_ss_w = 0, touch_ss_h = 0;
 
+static SDL_FingerID dpad_touch_finger = -1;
 static SDL_FingerID a_touch_finger = -1;
 static SDL_FingerID b_touch_finger = -1;
 static SDL_FingerID l_touch_finger = -1;
@@ -66,6 +68,7 @@ static SDL_Texture *LoadTouchTexture(SDL_Renderer *renderer, const char *path) {
     return texture;
 }
 
+static SDL_Rect dstDpad;
 static SDL_Rect dstA;
 static SDL_Rect dstB;
 static SDL_Rect dstL;
@@ -681,6 +684,43 @@ void Platform_QueueAudio(const s16 *data, uint32_t bytesCount)
     SDL_QueueAudio(1, data, bytesCount);
     // printf("Queueing %d\n, QueueSize %d\n", bytesCount, SDL_GetQueuedAudioSize(1));
 }
+#if defined(__ANDROID__)
+
+/* D-Pad configuration — tune these to match dstDpad's actual on-screen position */
+#define DPAD_CENTER_X   0.17f
+#define DPAD_CENTER_Y   0.75f
+#define DPAD_RADIUS     0.15f
+#define DPAD_DEADZONE   0.03f
+
+static bool IsInsideDpad(float x, float y)
+{
+    float dx = x - DPAD_CENTER_X;
+    float dy = y - DPAD_CENTER_Y;
+    return (dx * dx + dy * dy) <= (DPAD_RADIUS * DPAD_RADIUS);
+}
+
+static u16 ComputeDpadKeys(float x, float y)
+{
+    float dx = x - DPAD_CENTER_X;
+    float dy = y - DPAD_CENTER_Y;
+    float dist = sqrtf(dx * dx + dy * dy);
+
+    if (dist < DPAD_DEADZONE)
+        return 0;
+
+    float angle = atan2f(-dy, dx) * 180.0f / (float)M_PI; /* -dy: screen y grows downward */
+    if (angle < 0) angle += 360.0f;
+
+    if (angle >= 337.5f || angle < 22.5f)   return DPAD_RIGHT;
+    if (angle < 67.5f)                       return DPAD_RIGHT | DPAD_UP;
+    if (angle < 112.5f)                      return DPAD_UP;
+    if (angle < 157.5f)                      return DPAD_UP | DPAD_LEFT;
+    if (angle < 202.5f)                      return DPAD_LEFT;
+    if (angle < 247.5f)                      return DPAD_LEFT | DPAD_DOWN;
+    if (angle < 292.5f)                      return DPAD_DOWN;
+    return DPAD_DOWN | DPAD_RIGHT;
+}
+#endif
 
 void ProcessSDLEvents(void)
 {
@@ -769,6 +809,16 @@ case SDL_FINGERDOWN:
     float y = event.tfinger.y;
     SDL_FingerID finger = event.tfinger.fingerId;
 
+        /* D-Pad */
+    if (IsInsideDpad(x, y))
+    {
+        if (dpad_touch_finger == -1)
+        {
+            dpad_touch_finger = finger;
+            keys |= ComputeDpadKeys(x, y);
+        }
+    }
+
     /* L button (Perfect) */
     if (x < 0.20f && y < 0.25f)
     {
@@ -830,10 +880,37 @@ case SDL_FINGERDOWN:
     }
 }
 break;
+
+case SDL_FINGERMOTION:
+{
+    float x = event.tfinger.x;
+    float y = event.tfinger.y;
+    SDL_FingerID finger = event.tfinger.fingerId;
+
+    if (finger == dpad_touch_finger)
+    {
+        keys &= ~(DPAD_UP | DPAD_DOWN | DPAD_LEFT | DPAD_RIGHT);
+
+        if (IsInsideDpad(x, y))
+            keys |= ComputeDpadKeys(x, y);
+        else
+            dpad_touch_finger = -1; /* finger slid off the pad entirely */
+    }
+}
+break;
             
 case SDL_FINGERUP:
 {
     SDL_FingerID finger = event.tfinger.fingerId;
+
+    if (dpad_touch_finger == finger)
+    {
+        dpad_touch_finger = -1;
+        HANDLE_KEYUP(DPAD_UP);
+        HANDLE_KEYUP(DPAD_DOWN);
+        HANDLE_KEYUP(DPAD_LEFT);
+        HANDLE_KEYUP(DPAD_RIGHT);
+    }
 
     if (a_touch_finger == finger)
     {
