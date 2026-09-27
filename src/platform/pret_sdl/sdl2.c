@@ -464,8 +464,6 @@ void VBlankIntrWait(void)
         SDL_RenderClear(sdlRenderer);
         SDL_RenderCopy(sdlRenderer, sdlTexture, NULL, NULL);
 
-SDL_RenderPresent(sdlRenderer);
-
 
 #if ENABLE_VRAM_VIEW
         VramDraw(vramTexture);
