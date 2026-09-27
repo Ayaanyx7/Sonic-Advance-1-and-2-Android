@@ -482,13 +482,14 @@ SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
         // ==========================
         // 1. ---- L & R BUMPERS ----
         // ==========================
-        #define LR_GRID_W 220
-        #define LR_GRID_H 160
+        #define LR_GRID_W 688
 
         int lrW = LR_GRID_W / 2;
-        int lrH = LR_GRID_H / 2;
+        int lrH = touch_lr_h / 2;
+
         SDL_Rect srcL = { (l_touch_finger != -1) ? lrW : 0, 0,   lrW, lrH };
         SDL_Rect srcR = { (r_touch_finger != -1) ? lrW : 0, lrH, lrW, lrH };
+        
 
         dstL = (SDL_Rect){ 10, 10, 80, 48 };
         dstR = (SDL_Rect){ DISPLAY_WIDTH - 90, 10, 80, 48 };
