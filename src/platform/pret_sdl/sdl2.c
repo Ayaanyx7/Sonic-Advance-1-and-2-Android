@@ -532,6 +532,9 @@ SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
         SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcA, &dstA);
         SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcB, &dstB);
 
+float dpadScaleX = dstDpad.w / 64.0f;
+float dpadScaleY = dstDpad.h / 64.0f;
+
 int x0 = dstDpad.x;
 int x1 = dstDpad.x + (int)(26 * dpadScaleX + 0.5f);
 int x2 = dstDpad.x + (int)(38 * dpadScaleX + 0.5f);
@@ -548,12 +551,15 @@ SDL_Rect dstArmLeft    = { x0, y1, x1 - x0, y2 - y1 };
 SDL_Rect dstArmRight   = { x2, y1, x3 - x2, y2 - y1 };
 SDL_Rect dstArmCenter  = { x1, y1, x2 - x1, y2 - y1 };
 
+SDL_Rect armUp     = { 26, 0,  12, 25 };
+SDL_Rect armDown   = { 26, 38, 12, 26 };
+SDL_Rect armLeft   = { 0,  25, 26, 13 };
+SDL_Rect armRight  = { 38, 25, 26, 13 };
+SDL_Rect armCenter = { 26, 25, 12, 13 };
+
 int dpadIdleOX    = 81;
 int dpadPressedOX = 154;
 int dpadCellOY    = 8;
-
-float dpadScaleX = dstDpad.w / 64.0f;
-float dpadScaleY = dstDpad.h / 64.0f;
 
 SDL_Rect srcDpadBase = { 8, 8, 64, 64 };
 SDL_RenderCopy(sdlRenderer, touch_dpad_texture, &srcDpadBase, &dstDpad);
@@ -852,10 +858,10 @@ case SDL_FINGERDOWN:
     /* D-Pad */
     if (IsInsideDpad(px, py))
     {
-        if (dpad_touch_finger == finger)
+        if (dpad_touch_finger == -1)
 {
-    dpad_touch_finger = -1;
-    keys &= ~(DPAD_UP | DPAD_DOWN | DPAD_LEFT | DPAD_RIGHT);
+    dpad_touch_finger = finger;
+    keys |= ComputeDPadKeys(px, py);
 }
 
     /* L button */
@@ -946,13 +952,10 @@ case SDL_FINGERUP:
     SDL_FingerID finger = event.tfinger.fingerId;
 
     if (dpad_touch_finger == finger)
-    {
-        dpad_touch_finger = -1;
-        HANDLE_KEYUP(DPAD_UP);
-        HANDLE_KEYUP(DPAD_DOWN);
-        HANDLE_KEYUP(DPAD_LEFT);
-        HANDLE_KEYUP(DPAD_RIGHT);
-    }
+{
+    dpad_touch_finger = -1;
+    keys &= ~(DPAD_UP | DPAD_DOWN | DPAD_LEFT | DPAD_RIGHT);
+}
 
     if (a_touch_finger == finger)
     {
