@@ -532,11 +532,21 @@ SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
         SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcA, &dstA);
         SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcB, &dstB);
 
-SDL_Rect armUp     = { 26, 0,  12, 25 };
-SDL_Rect armDown   = { 26, 38, 12, 26 };
-SDL_Rect armLeft   = { 0,  25, 26, 13 };
-SDL_Rect armRight  = { 38, 25, 26, 13 };
-SDL_Rect armCenter = { 26, 25, 12, 13 };
+int x0 = dstDpad.x;
+int x1 = dstDpad.x + (int)(26 * dpadScaleX + 0.5f);
+int x2 = dstDpad.x + (int)(38 * dpadScaleX + 0.5f);
+int x3 = dstDpad.x + dstDpad.w;
+
+int y0 = dstDpad.y;
+int y1 = dstDpad.y + (int)(25 * dpadScaleY + 0.5f);
+int y2 = dstDpad.y + (int)(38 * dpadScaleY + 0.5f);
+int y3 = dstDpad.y + dstDpad.h;
+
+SDL_Rect dstArmUp     = { x1, y0, x2 - x1, y1 - y0 };
+SDL_Rect dstArmDown    = { x1, y2, x2 - x1, y3 - y2 };
+SDL_Rect dstArmLeft    = { x0, y1, x1 - x0, y2 - y1 };
+SDL_Rect dstArmRight   = { x2, y1, x3 - x2, y2 - y1 };
+SDL_Rect dstArmCenter  = { x1, y1, x2 - x1, y2 - y1 };
 
 int dpadIdleOX    = 81;
 int dpadPressedOX = 154;
@@ -548,23 +558,19 @@ float dpadScaleY = dstDpad.h / 64.0f;
 SDL_Rect srcDpadBase = { 8, 8, 64, 64 };
 SDL_RenderCopy(sdlRenderer, touch_dpad_texture, &srcDpadBase, &dstDpad);
 
-#define DRAW_DPAD_ARM(armRect, held) \
+#define DRAW_DPAD_ARM(armRectSrc, dstRectFixed, held) \
     do { \
-        SDL_Rect srcArm = { (held ? dpadPressedOX : dpadIdleOX) + (armRect).x, \
-                             dpadCellOY + (armRect).y, \
-                             (armRect).w, (armRect).h }; \
-        SDL_Rect dstArm = { dstDpad.x + (int)((armRect).x * dpadScaleX), \
-                             dstDpad.y + (int)((armRect).y * dpadScaleY), \
-                             (int)((armRect).w * dpadScaleX), \
-                             (int)((armRect).h * dpadScaleY) }; \
-        SDL_RenderCopy(sdlRenderer, touch_dpad_texture, &srcArm, &dstArm); \
+        SDL_Rect srcArm = { (held ? dpadPressedOX : dpadIdleOX) + (armRectSrc).x, \
+                             dpadCellOY + (armRectSrc).y, \
+                             (armRectSrc).w, (armRectSrc).h }; \
+        SDL_RenderCopy(sdlRenderer, touch_dpad_texture, &srcArm, &(dstRectFixed)); \
     } while (0)
 
-DRAW_DPAD_ARM(armUp,     (keys & DPAD_UP)    != 0);
-DRAW_DPAD_ARM(armDown,   (keys & DPAD_DOWN)  != 0);
-DRAW_DPAD_ARM(armLeft,   (keys & DPAD_LEFT)  != 0);
-DRAW_DPAD_ARM(armRight,  (keys & DPAD_RIGHT) != 0);
-DRAW_DPAD_ARM(armCenter, false);
+DRAW_DPAD_ARM(armUp,     dstArmUp,     (keys & DPAD_UP)    != 0);
+DRAW_DPAD_ARM(armDown,   dstArmDown,   (keys & DPAD_DOWN)  != 0);
+DRAW_DPAD_ARM(armLeft,   dstArmLeft,   (keys & DPAD_LEFT)  != 0);
+DRAW_DPAD_ARM(armRight,  dstArmRight,  (keys & DPAD_RIGHT) != 0);
+DRAW_DPAD_ARM(armCenter, dstArmCenter, false);
 
 #undef DRAW_DPAD_ARM
 #endif
@@ -846,12 +852,11 @@ case SDL_FINGERDOWN:
     /* D-Pad */
     if (IsInsideDpad(px, py))
     {
-        if (dpad_touch_finger == -1)
-        {
-            dpad_touch_finger = finger;
-            keys |= ComputeDpadKeys(px, py);
-        }
-    }
+        if (dpad_touch_finger == finger)
+{
+    dpad_touch_finger = -1;
+    keys &= ~(DPAD_UP | DPAD_DOWN | DPAD_LEFT | DPAD_RIGHT);
+}
 
     /* L button */
     if (x < 0.20f && y < 0.25f)
