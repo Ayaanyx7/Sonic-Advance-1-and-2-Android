@@ -204,6 +204,10 @@ int setupPspCallbacks(void)
 }
 #endif
 
+#ifdef __ANDROID__
+static u16 keys;
+#endif
+
 int main(int argc, char **argv)
 {
 #ifdef __PSP__
