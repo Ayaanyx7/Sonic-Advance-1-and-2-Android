@@ -69,6 +69,8 @@ static SDL_Texture *LoadTouchTexture(SDL_Renderer *renderer, const char *path) {
 }
 
 static SDL_Rect dstDpad;
+static int dpadPixelCenterX, dpadPixelCenterY, dpadPixelRadius;
+#define DPAD_DEADZONE_PX 8
 static SDL_Rect dstA;
 static SDL_Rect dstB;
 static SDL_Rect dstL;
@@ -346,7 +348,11 @@ int main(int argc, char **argv)
     if (touch_lr_texture) SDL_QueryTexture(touch_lr_texture, NULL, NULL, &touch_lr_w, &touch_lr_h);
     if (touch_ab_texture) SDL_QueryTexture(touch_ab_texture, NULL, NULL, &touch_ab_w, &touch_ab_h);
     if (touch_start_select_texture) SDL_QueryTexture(touch_start_select_texture, NULL, NULL, &touch_ss_w, &touch_ss_h);
-        
+
+    dstDpad = (SDL_Rect){ 20, DISPLAY_HEIGHT - 100, 80, 80 };
+    dpadPixelCenterX = dstDpad.x + dstDpad.w / 2;
+    dpadPixelCenterY = dstDpad.y + dstDpad.h / 2;
+    dpadPixelRadius  = dstDpad.w / 2;        
 #endif
     
 #if ENABLE_VRAM_VIEW
@@ -521,6 +527,42 @@ SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 
         SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcA, &dstA);
         SDL_RenderCopy(sdlRenderer, touch_ab_texture, &srcB, &dstB);
+
+SDL_Rect armUp     = { 26, 0,  12, 25 };
+SDL_Rect armDown   = { 26, 38, 12, 26 };
+SDL_Rect armLeft   = { 0,  25, 26, 13 };
+SDL_Rect armRight  = { 38, 25, 26, 13 };
+SDL_Rect armCenter = { 26, 25, 12, 13 };
+
+int dpadIdleOX    = 81;
+int dpadPressedOX = 154;
+int dpadCellOY    = 8;
+
+float dpadScaleX = dstDpad.w / 64.0f;
+float dpadScaleY = dstDpad.h / 64.0f;
+
+SDL_Rect srcDpadBase = { 8, 8, 64, 64 };
+SDL_RenderCopy(sdlRenderer, touch_dpad_texture, &srcDpadBase, &dstDpad);
+
+#define DRAW_DPAD_ARM(armRect, held) \
+    do { \
+        SDL_Rect srcArm = { (held ? dpadPressedOX : dpadIdleOX) + (armRect).x, \
+                             dpadCellOY + (armRect).y, \
+                             (armRect).w, (armRect).h }; \
+        SDL_Rect dstArm = { dstDpad.x + (int)((armRect).x * dpadScaleX), \
+                             dstDpad.y + (int)((armRect).y * dpadScaleY), \
+                             (int)((armRect).w * dpadScaleX), \
+                             (int)((armRect).h * dpadScaleY) }; \
+        SDL_RenderCopy(sdlRenderer, touch_dpad_texture, &srcArm, &dstArm); \
+    } while (0)
+
+DRAW_DPAD_ARM(armUp,     (keys & DPAD_UP)    != 0);
+DRAW_DPAD_ARM(armDown,   (keys & DPAD_DOWN)  != 0);
+DRAW_DPAD_ARM(armLeft,   (keys & DPAD_LEFT)  != 0);
+DRAW_DPAD_ARM(armRight,  (keys & DPAD_RIGHT) != 0);
+DRAW_DPAD_ARM(armCenter, false);
+
+#undef DRAW_DPAD_ARM
 #endif
         SDL_RenderPresent(sdlRenderer);
 #if ENABLE_VRAM_VIEW
@@ -675,29 +717,25 @@ void Platform_QueueAudio(const s16 *data, uint32_t bytesCount)
 }
 #if defined(__ANDROID__)
 
-/* D-Pad configuration — tune these to match dstDpad's actual on-screen position */
-#define DPAD_CENTER_X   0.17f
-#define DPAD_CENTER_Y   0.75f
-#define DPAD_RADIUS     0.15f
-#define DPAD_DEADZONE   0.03f
+static int dpadPixelCenterX, dpadPixelCenterY, dpadPixelRadius;
 
-static bool IsInsideDpad(float x, float y)
+static bool IsInsideDpad(int px, int py)
 {
-    float dx = x - DPAD_CENTER_X;
-    float dy = y - DPAD_CENTER_Y;
-    return (dx * dx + dy * dy) <= (DPAD_RADIUS * DPAD_RADIUS);
+    int dx = px - dpadPixelCenterX;
+    int dy = py - dpadPixelCenterY;
+    return (dx * dx + dy * dy) <= (dpadPixelRadius * dpadPixelRadius);
 }
 
-static u16 ComputeDpadKeys(float x, float y)
+static u16 ComputeDpadKeys(int px, int py)
 {
-    float dx = x - DPAD_CENTER_X;
-    float dy = y - DPAD_CENTER_Y;
-    float dist = sqrtf(dx * dx + dy * dy);
+    int dx = px - dpadPixelCenterX;
+    int dy = py - dpadPixelCenterY;
+    float dist = sqrtf((float)(dx * dx + dy * dy));
 
-    if (dist < DPAD_DEADZONE)
+    if (dist < DPAD_DEADZONE_PX)
         return 0;
 
-    float angle = atan2f(-dy, dx) * 180.0f / (float)M_PI; /* -dy: screen y grows downward */
+    float angle = atan2f((float)-dy, (float)dx) * 180.0f / (float)M_PI;
     if (angle < 0) angle += 360.0f;
 
     if (angle >= 337.5f || angle < 22.5f)   return DPAD_RIGHT;
@@ -798,17 +836,20 @@ case SDL_FINGERDOWN:
     float y = event.tfinger.y;
     SDL_FingerID finger = event.tfinger.fingerId;
 
-        /* D-Pad */
-    if (IsInsideDpad(x, y))
+    int px = (int)(x * DISPLAY_WIDTH);
+    int py = (int)(y * DISPLAY_HEIGHT);
+
+    /* D-Pad */
+    if (IsInsideDpad(px, py))
     {
         if (dpad_touch_finger == -1)
         {
             dpad_touch_finger = finger;
-            keys |= ComputeDpadKeys(x, y);
+            keys |= ComputeDpadKeys(px, py);
         }
     }
 
-    /* L button (Perfect) */
+    /* L button */
     if (x < 0.20f && y < 0.25f)
     {
         if (l_touch_finger == -1)
@@ -818,7 +859,7 @@ case SDL_FINGERDOWN:
         }
     }
 
-    /* R button (Perfect) */
+    /* R button */
     else if (x > 0.80f && y < 0.25f)
     {
         if (r_touch_finger == -1)
@@ -828,7 +869,7 @@ case SDL_FINGERDOWN:
         }
     }
 
-    /* Select - Moved up against the top edge, tightened width */
+    /* Select */
     else if (x > 0.40f && x < 0.55f && y < 0.15f)
     {
         if (select_touch_finger == -1)
@@ -838,7 +879,7 @@ case SDL_FINGERDOWN:
         }
     }
 
-    /* Start - Moved up against the top edge, tightened width */
+    /* Start */
     else if (x > 0.55f && x < 0.70f && y < 0.15f)
     {
         if (start_touch_finger == -1)
@@ -848,7 +889,7 @@ case SDL_FINGERDOWN:
         }
     }
 
-    /* A button - Now closer to the center, pushed away from middle screen */
+    /* A button */
     else if (x > 0.65f && x < 0.82f && y > 0.60f && y < 0.85f)
     {
         if (a_touch_finger == -1)
@@ -858,7 +899,7 @@ case SDL_FINGERDOWN:
         }
     }
 
-    /* B button - Now on the far right edge */
+    /* B button */
     else if (x > 0.82f && y > 0.60f && y < 0.85f)
     {
         if (b_touch_finger == -1)
@@ -876,14 +917,17 @@ case SDL_FINGERMOTION:
     float y = event.tfinger.y;
     SDL_FingerID finger = event.tfinger.fingerId;
 
+    int px = (int)(x * DISPLAY_WIDTH);
+    int py = (int)(y * DISPLAY_HEIGHT);
+
     if (finger == dpad_touch_finger)
     {
         keys &= ~(DPAD_UP | DPAD_DOWN | DPAD_LEFT | DPAD_RIGHT);
 
-        if (IsInsideDpad(x, y))
-            keys |= ComputeDpadKeys(x, y);
+        if (IsInsideDpad(px, py))
+            keys |= ComputeDpadKeys(px, py);
         else
-            dpad_touch_finger = -1; /* finger slid off the pad entirely */
+            dpad_touch_finger = -1;
     }
 }
 break;
