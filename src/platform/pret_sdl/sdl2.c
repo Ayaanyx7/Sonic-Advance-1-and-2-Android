@@ -859,13 +859,14 @@ case SDL_FINGERDOWN:
     if (IsInsideDpad(px, py))
     {
         if (dpad_touch_finger == -1)
-{
+        {
     dpad_touch_finger = finger;
-    keys |= ComputeDPadKeys(px, py);
-}
+    keys |= ComputeDpadKeys(px, py);
+        }
+    }
 
     /* L button */
-    if (x < 0.20f && y < 0.25f)
+    else if (x < 0.20f && y < 0.25f)
     {
         if (l_touch_finger == -1)
         {
