@@ -495,10 +495,10 @@ SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
         #define LR_GRID_W 688
 
         int lrW = LR_GRID_W / 2;
-        int lrH = touch_lr_h / 2;
-
-        SDL_Rect srcL = { (l_touch_finger != -1) ? lrW : 0, 0,   lrW, lrH };
-        SDL_Rect srcR = { (r_touch_finger != -1) ? lrW : 0, lrH, lrW, lrH };
+        int lrRowSplit = 223;
+        
+        SDL_Rect srcL = { (l_touch_finger != -1) ? lrW : 0, 0,          lrW, lrRowSplit };
+        SDL_Rect srcR = { (r_touch_finger != -1) ? lrW : 0, lrRowSplit, lrW, touch_lr_h - lrRowSplit };
         
 
         dstL = (SDL_Rect){ 10, 10, 80, 48 };
@@ -544,12 +544,13 @@ int y0 = dstDpad.y;
 int y1 = dstDpad.y + (int)(25 * dpadScaleY + 0.5f);
 int y2 = dstDpad.y + (int)(38 * dpadScaleY + 0.5f);
 int y3 = dstDpad.y + dstDpad.h;
+int overlapPx = 3;
 
-SDL_Rect dstArmUp     = { x1, y0, x2 - x1, y1 - y0 };
-SDL_Rect dstArmDown    = { x1, y2, x2 - x1, y3 - y2 };
-SDL_Rect dstArmLeft    = { x0, y1, x1 - x0, y2 - y1 };
-SDL_Rect dstArmRight   = { x2, y1, x3 - x2, y2 - y1 };
-SDL_Rect dstArmCenter  = { x1, y1, x2 - x1, y2 - y1 };
+SDL_Rect dstArmUp     = { x1, y0,            x2 - x1,             (y1 - y0) + overlapPx };
+SDL_Rect dstArmDown   = { x1, y2 - overlapPx, x2 - x1,             (y3 - y2) + overlapPx };
+SDL_Rect dstArmLeft   = { x0, y1,             (x1 - x0) + overlapPx, y2 - y1 };
+SDL_Rect dstArmRight  = { x2 - overlapPx, y1, (x3 - x2) + overlapPx, y2 - y1 };
+SDL_Rect dstArmCenter = { x1, y1, x2 - x1, y2 - y1 };
 
 SDL_Rect armUp     = { 26, 0,  12, 25 };
 SDL_Rect armDown   = { 26, 38, 12, 26 };
@@ -572,10 +573,10 @@ SDL_RenderCopy(sdlRenderer, touch_dpad_texture, &srcDpadBase, &dstDpad);
         SDL_RenderCopy(sdlRenderer, touch_dpad_texture, &srcArm, &(dstRectFixed)); \
     } while (0)
 
-DRAW_DPAD_ARM(armUp,     dstArmUp,     (keys & DPAD_UP)    != 0);
-DRAW_DPAD_ARM(armDown,   dstArmDown,   (keys & DPAD_DOWN)  != 0);
-DRAW_DPAD_ARM(armLeft,   dstArmLeft,   (keys & DPAD_LEFT)  != 0);
-DRAW_DPAD_ARM(armRight,  dstArmRight,  (keys & DPAD_RIGHT) != 0);
+DRAW_DPAD_ARM(armUp,    dstArmUp,    (keys & DPAD_UP)    != 0);
+DRAW_DPAD_ARM(armDown,  dstArmDown,  (keys & DPAD_DOWN)  != 0);
+DRAW_DPAD_ARM(armLeft,  dstArmLeft,  (keys & DPAD_LEFT)  != 0);
+DRAW_DPAD_ARM(armRight, dstArmRight, (keys & DPAD_RIGHT) != 0);
 DRAW_DPAD_ARM(armCenter, dstArmCenter, false);
 
 #undef DRAW_DPAD_ARM
