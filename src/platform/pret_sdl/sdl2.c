@@ -540,10 +540,20 @@ SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 float dpadScaleX = dstDpad.w / 64.0f;
 float dpadScaleY = dstDpad.h / 64.0f;
 
-SDL_Rect dstArmUp     = { x1, y0,            x2 - x1,             (y1 - y0) + overlapPx };
-SDL_Rect dstArmDown   = { x1, y2 - overlapPx, x2 - x1,             (y3 - y2) + overlapPx };
-SDL_Rect dstArmLeft   = { x0, y1,             (x1 - x0) + overlapPx, y2 - y1 };
-SDL_Rect dstArmRight  = { x2 - overlapPx, y1, (x3 - x2) + overlapPx, y2 - y1 };
+int x0 = dstDpad.x;
+int x1 = dstDpad.x + (int)(26 * dpadScaleX + 0.5f);
+int x2 = dstDpad.x + (int)(38 * dpadScaleX + 0.5f);
+int x3 = dstDpad.x + dstDpad.w;
+
+int y0 = dstDpad.y;
+int y1 = dstDpad.y + (int)(25 * dpadScaleY + 0.5f);
+int y2 = dstDpad.y + (int)(38 * dpadScaleY + 0.5f);
+int y3 = dstDpad.y + dstDpad.h;
+
+SDL_Rect dstArmUp     = { x1, y0, x2 - x1, y1 - y0 };
+SDL_Rect dstArmDown   = { x1, y2, x2 - x1, y3 - y2 };
+SDL_Rect dstArmLeft   = { x0, y1, x1 - x0, y2 - y1 };
+SDL_Rect dstArmRight  = { x2, y1, x3 - x2, y2 - y1 };
 SDL_Rect dstArmCenter = { x1, y1, x2 - x1, y2 - y1 };
 
 SDL_Rect armUp     = { 26, 0,  12, 25 };
