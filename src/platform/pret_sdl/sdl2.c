@@ -28,6 +28,7 @@ static SDL_Texture *touch_lr_texture = NULL;
 static SDL_Texture *touch_ab_texture = NULL;
 static SDL_Texture *touch_start_select_texture = NULL;
 static SDL_Texture *touch_dpad_texture = NULL;
+static SDL_Texture *dpadComposite = NULL;
 
 static int touch_lr_w = 0, touch_lr_h = 0;
 static int touch_ab_w = 0, touch_ab_h = 0;
@@ -349,6 +350,10 @@ int main(int argc, char **argv)
     touch_start_select_texture = LoadTouchTexture(sdlRenderer, "touch/start and select.png");
     touch_dpad_texture = LoadTouchTexture(sdlRenderer, "touch/Dpad stuff.png");
 
+dpadComposite = SDL_CreateTexture(sdlRenderer, SDL_PIXELFORMAT_RGBA8888,
+                                    SDL_TEXTUREACCESS_TARGET, 64, 64);
+SDL_SetTextureBlendMode(dpadComposite, SDL_BLENDMODE_BLEND);
+
     if (touch_lr_texture) SDL_QueryTexture(touch_lr_texture, NULL, NULL, &touch_lr_w, &touch_lr_h);
     if (touch_ab_texture) SDL_QueryTexture(touch_ab_texture, NULL, NULL, &touch_ab_w, &touch_ab_h);
     if (touch_start_select_texture) SDL_QueryTexture(touch_start_select_texture, NULL, NULL, &touch_ss_w, &touch_ss_h);
@@ -535,17 +540,6 @@ SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 float dpadScaleX = dstDpad.w / 64.0f;
 float dpadScaleY = dstDpad.h / 64.0f;
 
-int x0 = dstDpad.x;
-int x1 = dstDpad.x + (int)(26 * dpadScaleX + 0.5f);
-int x2 = dstDpad.x + (int)(38 * dpadScaleX + 0.5f);
-int x3 = dstDpad.x + dstDpad.w;
-
-int y0 = dstDpad.y;
-int y1 = dstDpad.y + (int)(25 * dpadScaleY + 0.5f);
-int y2 = dstDpad.y + (int)(38 * dpadScaleY + 0.5f);
-int y3 = dstDpad.y + dstDpad.h;
-int overlapPx = 3;
-
 SDL_Rect dstArmUp     = { x1, y0,            x2 - x1,             (y1 - y0) + overlapPx };
 SDL_Rect dstArmDown   = { x1, y2 - overlapPx, x2 - x1,             (y3 - y2) + overlapPx };
 SDL_Rect dstArmLeft   = { x0, y1,             (x1 - x0) + overlapPx, y2 - y1 };
@@ -562,24 +556,32 @@ int dpadIdleOX    = 81;
 int dpadPressedOX = 154;
 int dpadCellOY    = 8;
 
-SDL_Rect srcDpadBase = { 8, 8, 64, 64 };
-SDL_RenderCopy(sdlRenderer, touch_dpad_texture, &srcDpadBase, &dstDpad);
+SDL_SetRenderTarget(sdlRenderer, dpadComposite);
+SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 0, 0);
+SDL_RenderClear(sdlRenderer);
 
-#define DRAW_DPAD_ARM(armRectSrc, dstRectFixed, held) \
+SDL_Rect srcDpadBase = { 8, 8, 64, 64 };
+SDL_Rect dstDpadBaseLocal = { 0, 0, 64, 64 };
+SDL_RenderCopy(sdlRenderer, touch_dpad_texture, &srcDpadBase, &dstDpadBaseLocal);
+
+#define COMPOSITE_DPAD_ARM(armRect, held) \
     do { \
-        SDL_Rect srcArm = { (held ? dpadPressedOX : dpadIdleOX) + (armRectSrc).x, \
-                             dpadCellOY + (armRectSrc).y, \
-                             (armRectSrc).w, (armRectSrc).h }; \
-        SDL_RenderCopy(sdlRenderer, touch_dpad_texture, &srcArm, &(dstRectFixed)); \
+        SDL_Rect srcArm = { (held ? dpadPressedOX : dpadIdleOX) + (armRect).x, \
+                             dpadCellOY + (armRect).y, \
+                             (armRect).w, (armRect).h }; \
+        SDL_RenderCopy(sdlRenderer, touch_dpad_texture, &srcArm, &(armRect)); \
     } while (0)
 
-DRAW_DPAD_ARM(armUp,    dstArmUp,    (keys & DPAD_UP)    != 0);
-DRAW_DPAD_ARM(armDown,  dstArmDown,  (keys & DPAD_DOWN)  != 0);
-DRAW_DPAD_ARM(armLeft,  dstArmLeft,  (keys & DPAD_LEFT)  != 0);
-DRAW_DPAD_ARM(armRight, dstArmRight, (keys & DPAD_RIGHT) != 0);
-DRAW_DPAD_ARM(armCenter, dstArmCenter, false);
+COMPOSITE_DPAD_ARM(armUp,    (keys & DPAD_UP)    != 0);
+COMPOSITE_DPAD_ARM(armDown,  (keys & DPAD_DOWN)  != 0);
+COMPOSITE_DPAD_ARM(armLeft,  (keys & DPAD_LEFT)  != 0);
+COMPOSITE_DPAD_ARM(armRight, (keys & DPAD_RIGHT) != 0);
+COMPOSITE_DPAD_ARM(armCenter, false);
 
-#undef DRAW_DPAD_ARM
+#undef COMPOSITE_DPAD_ARM
+
+SDL_SetRenderTarget(sdlRenderer, NULL);
+SDL_RenderCopy(sdlRenderer, dpadComposite, NULL, &dstDpad);
 #endif
         SDL_RenderPresent(sdlRenderer);
 #if ENABLE_VRAM_VIEW
