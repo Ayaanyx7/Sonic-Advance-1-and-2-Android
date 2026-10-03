@@ -85,6 +85,7 @@
     android:alwaysRetainTaskState="true"
     android:launchMode="singleInstance"
     android:screenOrientation="landscape"
+    android:resizeableActivity="false"
     android:configChanges="layoutDirection|locale|orientation|uiMode|screenLayout|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"
     android:preferMinimalPostProcessing="true"
     android:exported="false">
