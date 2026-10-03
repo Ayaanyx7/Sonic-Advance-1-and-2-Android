@@ -68,3 +68,33 @@ const char *VerifyRomFile(const char *path)
     free(buf);
     return result;
 }
+
+#ifdef __ANDROID__
+#include <jni.h>
+
+JNIEXPORT jstring JNICALL
+Java_com_satr_romgate_RomVerifyActivity_nativeVerifyRom(JNIEnv *env, jobject thiz, jbyteArray romData)
+{
+    jsize len = (*env)->GetArrayLength(env, romData);
+    jbyte *bytes = (*env)->GetByteArrayElements(env, romData, NULL);
+
+    const char *result = VerifyRomBuffer((const unsigned char *)bytes, (size_t)len);
+
+    (*env)->ReleaseByteArrayElements(env, romData, bytes, JNI_ABORT);
+
+    if (result != NULL) {
+        return (*env)->NewStringUTF(env, result);
+    }
+    return NULL;
+}
+#endif
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+
+EMSCRIPTEN_KEEPALIVE
+const char *WebVerifyRom(const unsigned char *data, int len)
+{
+    return VerifyRomBuffer(data, (size_t)len);
+}
+#endif
