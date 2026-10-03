@@ -22,7 +22,6 @@ public class RomVerifyActivity extends Activity {
     private static final String PREF_KEY_VERIFIED = "rom_verified";
     private static final int PICK_ROM_REQUEST = 1001;
 
-    // TODO: confirm this matches whatever SDLActivity actually loads
     static {
         System.loadLibrary("main");
     }
@@ -121,8 +120,6 @@ public class RomVerifyActivity extends Activity {
     }
 
     private void launchGame() {
-        // Stock org.libsdl.app.SDLActivity, referenced directly — identical across
-        // every game branch since it's never been subclassed per-game.
         Intent intent = new Intent(this, org.libsdl.app.SDLActivity.class);
         startActivity(intent);
         finish();
