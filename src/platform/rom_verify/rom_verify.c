@@ -9,10 +9,17 @@ typedef struct {
     const char *hex_sha1;
 } KnownRom;
 
+#if GAME == GAME_SA1
 static const KnownRom kKnownRoms[] = {
-    { "Sonic Advance 2 (USA)",    "7bcd6a07af7c894746fa28073fe0c0e34408022d" },
     { "Sonic Advance 1 (Europe)", "eb00f101af23d728075ac2117e27ecd8a4b4c3e9" },
 };
+#elif GAME == GAME_SA2
+static const KnownRom kKnownRoms[] = {
+    { "Sonic Advance 2 (USA)", "7bcd6a07af7c894746fa28073fe0c0e34408022d" },
+};
+#else
+#error "rom_verify.c: GAME must be GAME_SA1 or GAME_SA2"
+#endif
 
 static void BytesToHex(const unsigned char *bytes, int len, char *out_hex)
 {
