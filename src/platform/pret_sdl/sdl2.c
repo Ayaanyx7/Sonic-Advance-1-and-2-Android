@@ -504,7 +504,14 @@ void VBlankIntrWait(void)
             videoScaleChanged = false;
         }
 #ifdef __ANDROID__
-
+#include "netlink.h"
+// ...
+if (NetLink_ConsumePendingMultiplayerStart())
+{
+    MultiSioInit(0);
+    StartMultiPakConnect();
+}
+        
 SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 
         #define LR_GRID_W 688
