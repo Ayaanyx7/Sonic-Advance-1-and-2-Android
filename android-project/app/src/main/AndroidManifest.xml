@@ -79,7 +79,7 @@
     </intent-filter>
 </activity>
 
-<activity android:name="org.libsdl.app.SDLActivity"
+<activity android:name="org.sega.sonicadv2.GameActivity"
     android:label="@string/app_name"
     android:alwaysRetainTaskState="true"
     android:screenOrientation="landscape"
