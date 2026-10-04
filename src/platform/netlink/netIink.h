@@ -1,26 +1,135 @@
-#ifndef NETLINK_H
-#define NETLINK_H
-#include <stddef.h>
+#include "netlink.h"
+#include <string.h>
 
-// Connect to the relay and either create or join a named room.
-// Returns 1 on success, 0 on failure.
-int NetLink_Connect(const char *room_name, int as_host);
+static int sAssignedId = -1;
 
-// Our own assigned player slot once paired: 0 = host/parent, 1-3 = joiner.
-// Only valid after NetLink_Connect succeeds.
-int NetLink_GetAssignedId(void);
+int NetLink_GetAssignedId(void) { return sAssignedId; }
 
-// Send our 20-byte payload to every other player in the room.
-void NetLink_Send(const unsigned char *data, size_t len);
+#ifdef __ANDROID__
+#include <jni.h>
 
-// Non-blocking: if a payload arrived from player slot `player_index`
-// since the last poll, copy up to `max_len` bytes into out_buf and
-// return 1. Otherwise return 0 immediately.
-int NetLink_PollSlot(int player_index, unsigned char *out_buf, size_t max_len);
+static JavaVM *sJavaVM = NULL;
 
-void NetLink_Disconnect(void);
+static jobject sBridgeInstance = NULL;
+static jclass sBridgeClass = NULL;
+static jmethodID sMidConnect, sMidSend, sMidPollSlot, sMidDisconnect;
 
-void OpenMultiplayerMenu(void);
-int NetLink_ConsumePendingMultiplayerStart(void); // call once per frame from the main loop
+static jobject sGameActivityInstance = NULL;
+static jclass sGameActivityClass = NULL;
+static jmethodID sMidShowMultiplayerMenu;
 
+static volatile int sPendingMultiplayerStart = 0;
+
+static JNIEnv *GetJNIEnv(void)
+{
+    JNIEnv *env;
+    (*sJavaVM)->GetEnv(sJavaVM, (void **)&env, JNI_VERSION_1_6);
+    (*sJavaVM)->AttachCurrentThread(sJavaVM, &env, NULL); // no-op if already attached
+    return env;
+}
+
+// Called once from NetLinkBridge's Java constructor.
+JNIEXPORT void JNICALL
+Java_com_satr_netlink_NetLinkBridge_nativeRegisterInstance(JNIEnv *env, jobject thiz)
+{
+    (*env)->GetJavaVM(env, &sJavaVM);
+    sBridgeInstance = (*env)->NewGlobalRef(env, thiz);
+    jclass localClass = (*env)->GetObjectClass(env, thiz);
+    sBridgeClass = (jclass)(*env)->NewGlobalRef(env, localClass);
+
+    sMidConnect    = (*env)->GetMethodID(env, sBridgeClass, "connect", "(Ljava/lang/String;Z)V");
+    sMidSend       = (*env)->GetMethodID(env, sBridgeClass, "send", "([B)V");
+    sMidPollSlot   = (*env)->GetMethodID(env, sBridgeClass, "pollSlot", "(I)[B");
+    sMidDisconnect = (*env)->GetMethodID(env, sBridgeClass, "disconnect", "()V");
+}
+
+// Fires from NetLinkBridge's WebSocket "assigned" handler, on OkHttp's
+// background thread — never touch game state here directly, just raise
+// a flag the main loop picks up on its own thread next frame.
+JNIEXPORT void JNICALL
+Java_com_satr_netlink_NetLinkBridge_nativeSetAssignedId(JNIEnv *env, jobject thiz, jint id)
+{
+    sAssignedId = id;
+    sPendingMultiplayerStart = 1;
+}
+
+int NetLink_Connect(const char *room_name, int as_host)
+{
+    if (!sBridgeInstance) return 0;
+    JNIEnv *env = GetJNIEnv();
+    jstring jroom = (*env)->NewStringUTF(env, room_name);
+    (*env)->CallVoidMethod(env, sBridgeInstance, sMidConnect, jroom, (jboolean)as_host);
+    (*env)->DeleteLocalRef(env, jroom);
+    return 1; // async — this just means the request was sent
+}
+
+void NetLink_Send(const unsigned char *data, size_t len)
+{
+    if (!sBridgeInstance) return;
+    JNIEnv *env = GetJNIEnv();
+    jbyteArray arr = (*env)->NewByteArray(env, (jsize)len);
+    (*env)->SetByteArrayRegion(env, arr, 0, (jsize)len, (const jbyte *)data);
+    (*env)->CallVoidMethod(env, sBridgeInstance, sMidSend, arr);
+    (*env)->DeleteLocalRef(env, arr);
+}
+
+int NetLink_PollSlot(int player_index, unsigned char *out_buf, size_t max_len)
+{
+    if (!sBridgeInstance) return 0;
+    JNIEnv *env = GetJNIEnv();
+    jbyteArray arr = (jbyteArray)(*env)->CallObjectMethod(env, sBridgeInstance, sMidPollSlot, player_index);
+    if (!arr) return 0;
+
+    jsize len = (*env)->GetArrayLength(env, arr);
+    if ((size_t)len > max_len) len = (jsize)max_len;
+    (*env)->GetByteArrayRegion(env, arr, 0, len, (jbyte *)out_buf);
+    (*env)->DeleteLocalRef(env, arr);
+    return 1;
+}
+
+void NetLink_Disconnect(void)
+{
+    if (!sBridgeInstance) return;
+    JNIEnv *env = GetJNIEnv();
+    (*env)->CallVoidMethod(env, sBridgeInstance, sMidDisconnect);
+}
+
+// Called once from GameActivity.onCreate(), after super.onCreate() has
+// loaded the native library.
+JNIEXPORT void JNICALL
+Java_org_sega_sonicadv2_GameActivity_nativeRegisterActivity(JNIEnv *env, jobject thiz)
+{
+    sGameActivityInstance = (*env)->NewGlobalRef(env, thiz);
+    jclass localClass = (*env)->GetObjectClass(env, thiz);
+    sGameActivityClass = (jclass)(*env)->NewGlobalRef(env, localClass);
+    sMidShowMultiplayerMenu = (*env)->GetMethodID(env, sGameActivityClass, "showMultiplayerMenu", "()V");
+}
+
+void OpenMultiplayerMenu(void)
+{
+    if (!sGameActivityInstance) return;
+    JNIEnv *env = GetJNIEnv();
+    (*env)->CallVoidMethod(env, sGameActivityInstance, sMidShowMultiplayerMenu);
+}
+
+int NetLink_ConsumePendingMultiplayerStart(void)
+{
+    if (sPendingMultiplayerStart) {
+        sPendingMultiplayerStart = 0;
+        return 1;
+    }
+    return 0;
+}
+#endif
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten/websocket.h>
+// Real implementation using the browser's native WebSocket directly —
+// a later step, separate design pass per what was flagged earlier.
+int NetLink_Connect(const char *room_name, int as_host) { return 0; }
+void NetLink_Send(const unsigned char *data, size_t len) { }
+int NetLink_PollSlot(int player_index, unsigned char *out_buf, size_t max_len) { return 0; }
+void NetLink_Disconnect(void) { }
+void OpenMultiplayerMenu(void) { }
+int NetLink_ConsumePendingMultiplayerStart(void) { return 0; }
 #endif
