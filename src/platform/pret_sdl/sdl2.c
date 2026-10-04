@@ -369,7 +369,9 @@ SDL_SetTextureBlendMode(dpadComposite, SDL_BLENDMODE_BLEND);
     dstDpad = (SDL_Rect){ 20, DISPLAY_HEIGHT - 100, 80, 80 };
     dpadPixelCenterX = dstDpad.x + dstDpad.w / 2;
     dpadPixelCenterY = dstDpad.y + dstDpad.h / 2;
-    dpadPixelRadius  = dstDpad.w / 2;        
+    dpadPixelRadius  = dstDpad.w / 2;  
+
+    dstMp = (SDL_Rect){ (DISPLAY_WIDTH / 2) - 16, DISPLAY_HEIGHT - 40, 32, 32 };
 #endif
     
 #if ENABLE_VRAM_VIEW
