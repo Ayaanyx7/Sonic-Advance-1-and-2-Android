@@ -120,7 +120,7 @@ public class RomVerifyActivity extends Activity {
     }
 
     private void launchGame() {
-        Intent intent = new Intent(this, org.libsdl.app.SDLActivity.class);
+        Intent intent = new Intent(this, org.sega.sonicadv2.GameActiviy.class);
         startActivity(intent);
         finish();
     }
