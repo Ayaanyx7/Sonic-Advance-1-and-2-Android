@@ -6,112 +6,113 @@ static int sAssignedId = -1;
 int NetLink_GetAssignedId(void) { return sAssignedId; }
 
 #ifdef __ANDROID__
-package com.satr.netlink;
+#include <jni.h>
 
-import android.util.Base64;
-import okhttp3.*;
-import org.json.JSONObject;
+static JavaVM *sJavaVM = NULL;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeUnit;
+static jobject sBridgeInstance = NULL;
+static jclass sBridgeClass = NULL;
+static jmethodID sMidConnect, sMidSend, sMidPollSlot, sMidDisconnect;
 
-public class NetLinkBridge {
-    private static final String RELAY_URL = "wss://advance-net-play-server.onrender.com";
+static jobject sGameActivityInstance = NULL;
+static jclass sGameActivityClass = NULL;
+static jmethodID sMidShowMultiplayerMenu;
 
-    private final OkHttpClient client;
-    private WebSocket webSocket;
-    private volatile boolean connected = false;
+static volatile int sPendingMultiplayerStart = 0;
 
-    @SuppressWarnings("unchecked")
-    private final ConcurrentLinkedQueue<byte[]>[] slotQueues = new ConcurrentLinkedQueue[4];
+static JNIEnv *GetJNIEnv(void)
+{
+    JNIEnv *env;
+    (*sJavaVM)->GetEnv(sJavaVM, (void **)&env, JNI_VERSION_1_6);
+    (*sJavaVM)->AttachCurrentThread(sJavaVM, &env, NULL);
+    return env;
+}
 
-    private native void nativeSetAssignedId(int id);
-    private native void nativeRegisterInstance();
+JNIEXPORT void JNICALL
+Java_com_satr_netlink_NetLinkBridge_nativeRegisterInstance(JNIEnv *env, jobject thiz)
+{
+    (*env)->GetJavaVM(env, &sJavaVM);
+    sBridgeInstance = (*env)->NewGlobalRef(env, thiz);
+    jclass localClass = (*env)->GetObjectClass(env, thiz);
+    sBridgeClass = (jclass)(*env)->NewGlobalRef(env, localClass);
 
-    public NetLinkBridge() {
-        for (int i = 0; i < 4; i++) slotQueues[i] = new ConcurrentLinkedQueue<>();
-        client = new OkHttpClient.Builder()
-            .readTimeout(0, TimeUnit.MILLISECONDS) // WebSockets are long-lived; no read timeout
-            .build();
-        nativeRegisterInstance();
+    sMidConnect    = (*env)->GetMethodID(env, sBridgeClass, "connect", "(Ljava/lang/String;Z)V");
+    sMidSend       = (*env)->GetMethodID(env, sBridgeClass, "send", "([B)V");
+    sMidPollSlot   = (*env)->GetMethodID(env, sBridgeClass, "pollSlot", "(I)[B");
+    sMidDisconnect = (*env)->GetMethodID(env, sBridgeClass, "disconnect", "()V");
+}
+
+JNIEXPORT void JNICALL
+Java_com_satr_netlink_NetLinkBridge_nativeSetAssignedId(JNIEnv *env, jobject thiz, jint id)
+{
+    sAssignedId = id;
+    sPendingMultiplayerStart = 1;
+}
+
+int NetLink_Connect(const char *room_name, int as_host)
+{
+    if (!sBridgeInstance) return 0;
+    JNIEnv *env = GetJNIEnv();
+    jstring jroom = (*env)->NewStringUTF(env, room_name);
+    (*env)->CallVoidMethod(env, sBridgeInstance, sMidConnect, jroom, (jboolean)as_host);
+    (*env)->DeleteLocalRef(env, jroom);
+    return 1;
+}
+
+void NetLink_Send(const unsigned char *data, size_t len)
+{
+    if (!sBridgeInstance) return;
+    JNIEnv *env = GetJNIEnv();
+    jbyteArray arr = (*env)->NewByteArray(env, (jsize)len);
+    (*env)->SetByteArrayRegion(env, arr, 0, (jsize)len, (const jbyte *)data);
+    (*env)->CallVoidMethod(env, sBridgeInstance, sMidSend, arr);
+    (*env)->DeleteLocalRef(env, arr);
+}
+
+int NetLink_PollSlot(int player_index, unsigned char *out_buf, size_t max_len)
+{
+    if (!sBridgeInstance) return 0;
+    JNIEnv *env = GetJNIEnv();
+    jbyteArray arr = (jbyteArray)(*env)->CallObjectMethod(env, sBridgeInstance, sMidPollSlot, player_index);
+    if (!arr) return 0;
+
+    jsize len = (*env)->GetArrayLength(env, arr);
+    if ((size_t)len > max_len) len = (jsize)max_len;
+    (*env)->GetByteArrayRegion(env, arr, 0, len, (jbyte *)out_buf);
+    (*env)->DeleteLocalRef(env, arr);
+    return 1;
+}
+
+void NetLink_Disconnect(void)
+{
+    if (!sBridgeInstance) return;
+    JNIEnv *env = GetJNIEnv();
+    (*env)->CallVoidMethod(env, sBridgeInstance, sMidDisconnect);
+}
+
+JNIEXPORT void JNICALL
+Java_org_sega_sonicadv2_GameActivity_nativeRegisterActivity(JNIEnv *env, jobject thiz)
+{
+    sGameActivityInstance = (*env)->NewGlobalRef(env, thiz);
+    jclass localClass = (*env)->GetObjectClass(env, thiz);
+    sGameActivityClass = (jclass)(*env)->NewGlobalRef(env, localClass);
+    sMidShowMultiplayerMenu = (*env)->GetMethodID(env, sGameActivityClass, "showMultiplayerMenu", "()V");
+}
+
+void OpenMultiplayerMenu(void)
+{
+    if (!sGameActivityInstance) return;
+    JNIEnv *env = GetJNIEnv();
+    (*env)->CallVoidMethod(env, sGameActivityInstance, sMidShowMultiplayerMenu);
+}
+
+int NetLink_ConsumePendingMultiplayerStart(void)
+{
+    if (sPendingMultiplayerStart) {
+        sPendingMultiplayerStart = 0;
+        return 1;
     }
-
-    public void connect(String roomName, boolean asHost) {
-        Request request = new Request.Builder().url(RELAY_URL).build();
-        webSocket = client.newWebSocket(request, new WebSocketListener() {
-            @Override
-            public void onOpen(WebSocket ws, Response response) {
-                try {
-                    JSONObject msg = new JSONObject();
-                    msg.put("type", asHost ? "host" : "join");
-                    msg.put("room", roomName);
-                    ws.send(msg.toString());
-                } catch (Exception ignored) {}
-            }
-
-            @Override
-            public void onMessage(WebSocket ws, String text) {
-                handleMessage(text);
-            }
-
-            @Override
-            public void onFailure(WebSocket ws, Throwable t, Response response) {
-                connected = false;
-            }
-
-            @Override
-            public void onClosed(WebSocket ws, int code, String reason) {
-                connected = false;
-            }
-        });
-    }
-
-    private void handleMessage(String text) {
-        try {
-            JSONObject obj = new JSONObject(text);
-            String type = obj.getString("type");
-
-            if (type.equals("assigned")) {
-                connected = true;
-                nativeSetAssignedId(obj.getInt("id"));
-            } else if (type.equals("data")) {
-                int from = obj.getInt("from");
-                byte[] bytes = Base64.decode(obj.getString("payload"), Base64.NO_WRAP);
-                if (from >= 0 && from < 4) {
-                    slotQueues[from].add(bytes);
-                }
-            }
-
-        } catch (Exception e) {
-        }
-    }
-
-    public void send(byte[] data) {
-        if (webSocket == null) return;
-        try {
-            JSONObject msg = new JSONObject();
-            msg.put("type", "data");
-            msg.put("payload", Base64.encodeToString(data, Base64.NO_WRAP));
-            webSocket.send(msg.toString());
-        } catch (Exception ignored) {}
-    }
-
-    public byte[] pollSlot(int playerIndex) {
-        if (playerIndex < 0 || playerIndex >= 4) return null;
-        return slotQueues[playerIndex].poll();
-    }
-
-    public void disconnect() {
-        if (webSocket != null) {
-            webSocket.close(1000, "done");
-            webSocket = null;
-        }
-        connected = false;
-    }
-
-    public boolean isConnected() {
-        return connected;
-    }
+    return 0;
 }
 #endif
 
@@ -121,4 +122,6 @@ int NetLink_Connect(const char *room_name, int as_host) { return 0; }
 void NetLink_Send(const unsigned char *data, size_t len) { }
 int NetLink_PollSlot(int player_index, unsigned char *out_buf, size_t max_len) { return 0; }
 void NetLink_Disconnect(void) { }
+void OpenMultiplayerMenu(void) { }
+int NetLink_ConsumePendingMultiplayerStart(void) { return 0; }
 #endif
