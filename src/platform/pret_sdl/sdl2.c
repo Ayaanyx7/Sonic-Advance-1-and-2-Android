@@ -504,7 +504,7 @@ void VBlankIntrWait(void)
             videoScaleChanged = false;
         }
 #ifdef __ANDROID__
-#include "../netlink/netlink.h"
+#include <netlink.h>
 // ...
 if (NetLink_ConsumePendingMultiplayerStart())
 {
