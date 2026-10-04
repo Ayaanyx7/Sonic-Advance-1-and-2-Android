@@ -257,6 +257,10 @@ int main(int argc, char **argv)
     return 1;
 }
 
+#ifdef __ANDROID__
+    SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight");
+#endif
+    
 #ifdef __PSP__
     if (SDL_NumJoysticks() > 0) {
         joystick = SDL_JoystickOpen(0);
