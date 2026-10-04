@@ -20,4 +20,7 @@ int NetLink_PollSlot(int player_index, unsigned char *out_buf, size_t max_len);
 
 void NetLink_Disconnect(void);
 
+void OpenMultiplayerMenu(void);
+int NetLink_ConsumePendingMultiplayerStart(void); // call once per frame from the main loop
+
 #endif
