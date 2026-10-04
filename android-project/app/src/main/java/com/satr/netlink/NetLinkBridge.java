@@ -23,7 +23,7 @@ public class NetLinkBridge {
     public NetLinkBridge() {
         for (int i = 0; i < 4; i++) slotQueues[i] = new ConcurrentLinkedQueue<>();
         client = new OkHttpClient.Builder()
-            .readTimeout(0, TimeUnit.MILLISECONDS) // WebSockets are long-lived; no read timeout
+            .readTimeout(0, TimeUnit.MILLISECONDS)
             .build();
         nativeRegisterInstance();
     }
@@ -73,11 +73,7 @@ public class NetLinkBridge {
                     slotQueues[from].add(bytes);
                 }
             }
-            // "error" type: nothing reads this yet — worth wiring to the UI
-            // once the host/join screen exists, so a full room or bad name
-            // shows the player something instead of silently hanging.
         } catch (Exception e) {
-            // Malformed message — drop it, never crash the connection over it.
         }
     }
 
@@ -107,4 +103,4 @@ public class NetLinkBridge {
     public boolean isConnected() {
         return connected;
     }
-            }
+}
