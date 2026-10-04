@@ -29,6 +29,7 @@ static SDL_Texture *touch_ab_texture = NULL;
 static SDL_Texture *touch_start_select_texture = NULL;
 static SDL_Texture *touch_dpad_texture = NULL;
 static SDL_Texture *dpadComposite = NULL;
+static SDL_Texture *touch_mp_texture = NULL;
 
 static int touch_lr_w = 0, touch_lr_h = 0;
 static int touch_ab_w = 0, touch_ab_h = 0;
@@ -41,6 +42,7 @@ static SDL_FingerID l_touch_finger = -1;
 static SDL_FingerID r_touch_finger = -1;
 static SDL_FingerID start_touch_finger = -1;
 static SDL_FingerID select_touch_finger = -1;
+static SDL_FingerID mp_touch_finger = -1;
 
 static SDL_Texture *LoadTouchTexture(SDL_Renderer *renderer, const char *path) { 
     SDL_RWops *rw = SDL_RWFromFile(path, "rb"); 
@@ -78,6 +80,7 @@ static SDL_Rect dstL;
 static SDL_Rect dstR;
 static SDL_Rect dstStart;
 static SDL_Rect dstSelect;
+static SDL_Rect dstMp;
 #endif
 
 #include <assert.h>
@@ -353,6 +356,7 @@ int main(int argc, char **argv)
     touch_ab_texture = LoadTouchTexture(sdlRenderer, "touch/A & B buttons.png");
     touch_start_select_texture = LoadTouchTexture(sdlRenderer, "touch/start and select.png");
     touch_dpad_texture = LoadTouchTexture(sdlRenderer, "touch/Dpad stuff.png");
+    touch_mp_texture = LoadTouchTexture(sdlRenderer, "touch/Multiplayer button.png");
 
 dpadComposite = SDL_CreateTexture(sdlRenderer, SDL_PIXELFORMAT_RGBA8888,
                                     SDL_TEXTUREACCESS_TARGET, 64, 64);
@@ -596,6 +600,13 @@ COMPOSITE_DPAD_ARM(armCenter, false);
 
 SDL_SetRenderTarget(sdlRenderer, NULL);
 SDL_RenderCopy(sdlRenderer, dpadComposite, NULL, &dstDpad);
+
+SDL_Rect srcMp = { 0, 0, 16, 16 };
+if (mp_touch_finger != -1)
+    SDL_SetTextureColorMod(touch_mp_texture, 180, 180, 180);
+else
+    SDL_SetTextureColorMod(touch_mp_texture, 255, 255, 255);
+SDL_RenderCopy(sdlRenderer, touch_mp_texture, &srcMp, &dstMp);
 #endif
         SDL_RenderPresent(sdlRenderer);
 #if ENABLE_VRAM_VIEW
@@ -941,6 +952,13 @@ case SDL_FINGERDOWN:
             keys |= B_BUTTON;
         }
     }
+
+    else if (x >= dstMp.x / (float)DISPLAY_WIDTH && x <= (dstMp.x + dstMp.w) / (float)DISPLAY_WIDTH &&
+         y >= dstMp.y / (float)DISPLAY_HEIGHT && y <= (dstMp.y + dstMp.h) / (float)DISPLAY_HEIGHT)
+{
+    if (mp_touch_finger == -1)
+        mp_touch_finger = finger;
+}
 }
 break;
 
@@ -1009,6 +1027,18 @@ case SDL_FINGERUP:
     {
         select_touch_finger = -1;
         keys &= ~SELECT_BUTTON;
+    }
+}
+    if (mp_touch_finger == finger)
+{
+    float x = event.tfinger.x;
+    float y = event.tfinger.y;
+    bool stillInside = (x >= dstMp.x / (float)DISPLAY_WIDTH && x <= (dstMp.x + dstMp.w) / (float)DISPLAY_WIDTH &&
+                         y >= dstMp.y / (float)DISPLAY_HEIGHT && y <= (dstMp.y + dstMp.h) / (float)DISPLAY_HEIGHT);
+    mp_touch_finger = -1;
+    if (stillInside)
+    {
+        OpenMultiplayerMenu();
     }
 }
 break; 
