@@ -510,6 +510,7 @@ void VBlankIntrWait(void)
 
 if (NetLink_ConsumePendingMultiplayerStart())
 {
+    gMultiSioEnabled = TRUE;
     MultiSioInit(0);
     StartMultiPakConnect();
 }
