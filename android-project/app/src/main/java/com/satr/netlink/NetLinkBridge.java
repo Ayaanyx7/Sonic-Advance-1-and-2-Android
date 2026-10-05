@@ -2,15 +2,33 @@ package com.satr.netlink;
 
 import android.util.Base64;
 import okhttp3.*;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
 public class NetLinkBridge {
     private static final String RELAY_URL = "wss://advance-net-play-server.onrender.com";
 
+    public interface Listener {
+        void onRoomListReceived(List<RoomInfo> rooms);
+        void onConnectError(String message);
+    }
+
+    public static class RoomInfo {
+        public final String name;
+        public final int players;
+        public RoomInfo(String name, int players) {
+            this.name = name;
+            this.players = players;
+        }
+    }
+
     private final OkHttpClient client;
+    private final Listener listener;
     private WebSocket webSocket;
     private volatile boolean connected = false;
 
@@ -20,27 +38,23 @@ public class NetLinkBridge {
     private native void nativeSetAssignedId(int id);
     private native void nativeRegisterInstance();
 
-    public NetLinkBridge() {
+    public NetLinkBridge(Listener listener) {
+        this.listener = listener;
         for (int i = 0; i < 4; i++) slotQueues[i] = new ConcurrentLinkedQueue<>();
         client = new OkHttpClient.Builder()
             .readTimeout(0, TimeUnit.MILLISECONDS)
             .build();
         nativeRegisterInstance();
+        openSocketIfNeeded();
     }
 
-    public void connect(String roomName, boolean asHost) {
+    // The socket now needs to be open before we can even request a room
+    // list, not just when actually connecting to a room — opened once,
+    // lazily, on first use.
+    private void openSocketIfNeeded() {
+        if (webSocket != null) return;
         Request request = new Request.Builder().url(RELAY_URL).build();
         webSocket = client.newWebSocket(request, new WebSocketListener() {
-            @Override
-            public void onOpen(WebSocket ws, Response response) {
-                try {
-                    JSONObject msg = new JSONObject();
-                    msg.put("type", asHost ? "host" : "join");
-                    msg.put("room", roomName);
-                    ws.send(msg.toString());
-                } catch (Exception ignored) {}
-            }
-
             @Override
             public void onMessage(WebSocket ws, String text) {
                 handleMessage(text);
@@ -49,6 +63,7 @@ public class NetLinkBridge {
             @Override
             public void onFailure(WebSocket ws, Throwable t, Response response) {
                 connected = false;
+                if (listener != null) listener.onConnectError("Connection failed: " + t.getMessage());
             }
 
             @Override
@@ -56,6 +71,27 @@ public class NetLinkBridge {
                 connected = false;
             }
         });
+    }
+
+    public void requestRoomList(String gameId) {
+        openSocketIfNeeded();
+        try {
+            JSONObject msg = new JSONObject();
+            msg.put("type", "list");
+            msg.put("game", gameId);
+            webSocket.send(msg.toString());
+        } catch (Exception ignored) {}
+    }
+
+    public void connect(String roomName, boolean asHost, String gameId) {
+        openSocketIfNeeded();
+        try {
+            JSONObject msg = new JSONObject();
+            msg.put("type", asHost ? "host" : "join");
+            msg.put("room", roomName);
+            msg.put("game", gameId);
+            webSocket.send(msg.toString());
+        } catch (Exception ignored) {}
     }
 
     private void handleMessage(String text) {
@@ -72,6 +108,16 @@ public class NetLinkBridge {
                 if (from >= 0 && from < 4) {
                     slotQueues[from].add(bytes);
                 }
+            } else if (type.equals("roomlist")) {
+                JSONArray arr = obj.getJSONArray("rooms");
+                List<RoomInfo> rooms = new ArrayList<>();
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject r = arr.getJSONObject(i);
+                    rooms.add(new RoomInfo(r.getString("name"), r.getInt("players")));
+                }
+                if (listener != null) listener.onRoomListReceived(rooms);
+            } else if (type.equals("error")) {
+                if (listener != null) listener.onConnectError(obj.optString("message", "Unknown error"));
             }
         } catch (Exception e) {
         }
