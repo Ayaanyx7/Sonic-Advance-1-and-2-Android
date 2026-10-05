@@ -5,6 +5,17 @@ static int sAssignedId = -1;
 
 int NetLink_GetAssignedId(void) { return sAssignedId; }
 
+const char *NetLink_GetGameId(void)
+{
+#if GAME == GAME_SA1
+    return "sa1";
+#elif GAME == GAME_SA2
+    return "sa2";
+#else
+    return "unknown";
+#endif
+}
+
 #ifdef __ANDROID__
 #include <jni.h>
 
@@ -103,7 +114,9 @@ void OpenMultiplayerMenu(void)
 {
     if (!sGameActivityInstance) return;
     JNIEnv *env = GetJNIEnv();
-    (*env)->CallVoidMethod(env, sGameActivityInstance, sMidShowMultiplayerMenu);
+    jstring jgame = (*env)->NewStringUTF(env, NetLink_GetGameId());
+    (*env)->CallVoidMethod(env, sGameActivityInstance, sMidShowMultiplayerMenu, jgame);
+    (*env)->DeleteLocalRef(env, jgame);
 }
 
 int NetLink_ConsumePendingMultiplayerStart(void)
