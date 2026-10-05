@@ -999,10 +999,10 @@ case SDL_FINGERUP:
     SDL_FingerID finger = event.tfinger.fingerId;
 
     if (dpad_touch_finger == finger)
-{
-    dpad_touch_finger = -1;
-    keys &= ~(DPAD_UP | DPAD_DOWN | DPAD_LEFT | DPAD_RIGHT);
-}
+    {
+        dpad_touch_finger = -1;
+        keys &= ~(DPAD_UP | DPAD_DOWN | DPAD_LEFT | DPAD_RIGHT);
+    }
 
     if (a_touch_finger == finger)
     {
@@ -1039,20 +1039,21 @@ case SDL_FINGERUP:
         select_touch_finger = -1;
         keys &= ~SELECT_BUTTON;
     }
-}
+
     if (mp_touch_finger == finger)
-{
-    float x = event.tfinger.x;
-    float y = event.tfinger.y;
-    bool stillInside = (x >= dstMp.x / (float)DISPLAY_WIDTH && x <= (dstMp.x + dstMp.w) / (float)DISPLAY_WIDTH &&
-                         y >= dstMp.y / (float)DISPLAY_HEIGHT && y <= (dstMp.y + dstMp.h) / (float)DISPLAY_HEIGHT);
-    mp_touch_finger = -1;
-    if (stillInside)
     {
-        OpenMultiplayerMenu();
+        float x = event.tfinger.x;
+        float y = event.tfinger.y;
+        bool stillInside = (x >= dstMp.x / (float)DISPLAY_WIDTH && x <= (dstMp.x + dstMp.w) / (float)DISPLAY_WIDTH &&
+                             y >= dstMp.y / (float)DISPLAY_HEIGHT && y <= (dstMp.y + dstMp.h) / (float)DISPLAY_HEIGHT);
+        mp_touch_finger = -1;
+        if (stillInside)
+        {
+            OpenMultiplayerMenu();
+        }
     }
 }
-break; 
+break;
 #endif
             case SDL_QUIT:
                 isRunning = false;
