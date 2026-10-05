@@ -69,3 +69,8 @@ u32 MultiSioMain(void *sendp, void *recvp, u32 loadRequest)
          | (gMultiSioArea.hardError != 0) << 12
          | (sMyPlayerId >= MULTI_SIO_PLAYERS_MAX) << 13;
 }
+
+void MultiSioIntr(void)
+{
+    
+}
