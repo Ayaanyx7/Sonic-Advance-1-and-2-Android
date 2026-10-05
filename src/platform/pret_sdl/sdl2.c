@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include <string.h>
+#include "../netlink/netlink.h" 
 
 FILE* android_fopen_override(const char* filename, const char* mode) {
     char absolute_path[PATH_MAX];
@@ -506,7 +507,6 @@ void VBlankIntrWait(void)
 #ifdef __ANDROID__
 #include "multi_sio.h"
 #include "game/sa2/multiplayer/multipak_connection.h"
-#include "../netlink/netlink.h"
 
 if (NetLink_ConsumePendingMultiplayerStart())
 {
