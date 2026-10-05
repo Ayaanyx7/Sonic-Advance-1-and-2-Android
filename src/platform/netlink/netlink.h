@@ -2,6 +2,9 @@
 #define NETLINK_H
 #include <stddef.h>
 
+// Returns "sa1" or "sa2" based on the compile-time GAME constant.
+const char *NetLink_GetGameId(void);
+
 // Connect to the relay and either create or join a named room.
 // Returns 1 if the request was sent, 0 on immediate failure (e.g. not
 // yet initialized). Actual success/failure arrives later via
