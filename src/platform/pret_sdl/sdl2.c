@@ -505,7 +505,7 @@ void VBlankIntrWait(void)
         }
 #ifdef __ANDROID__
 #include "multi_sio.h"
-#include "multipak_connection.h"
+#include "game/sa2/multiplayer/multipak_connection.h"
 #include "../netlink/netlink.h"
 
 if (NetLink_ConsumePendingMultiplayerStart())
