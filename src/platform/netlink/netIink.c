@@ -109,7 +109,7 @@ Java_org_sega_sonicadv2_GameActivity_nativeRegisterActivity(JNIEnv *env, jobject
     sGameActivityInstance = (*env)->NewGlobalRef(env, thiz);
     jclass localClass = (*env)->GetObjectClass(env, thiz);
     sGameActivityClass = (jclass)(*env)->NewGlobalRef(env, localClass);
-    sMidShowMultiplayerMenu = (*env)->GetMethodID(env, sGameActivityClass, "showMultiplayerMenu", "()V");
+    sMidShowMultiplayerMenu = (*env)->GetMethodID(env, sGameActivityClass, "showMultiplayerMenu", "(Ljavalang/String;)V");
 }
 
 void OpenMultiplayerMenu(void)
