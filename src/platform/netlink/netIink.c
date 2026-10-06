@@ -120,9 +120,13 @@ void OpenMultiplayerMenu(void)
     if (!sGameActivityInstance) return;
     JNIEnv *env = GetJNIEnv();
     if (!env) return;
+    if ((*env)->PushLocalFrame(env, 10) < 0) return;
+
     jstring jgame = (*env)->NewStringUTF(env, NetLink_GetGameId());
+    
     (*env)->CallVoidMethod(env, sGameActivityInstance, sMidShowMultiplayerMenu, jgame);
-    (*env)->DeleteLocalRef(env, jgame);
+
+    (*env)->PopLocalFrame(env, NULL);
 }
 
 int NetLink_ConsumePendingMultiplayerStart(void)
