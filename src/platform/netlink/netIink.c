@@ -33,12 +33,22 @@ static volatile int sPendingMultiplayerStart = 0;
 
 static JNIEnv *GetJNIEnv(void)
 {
-    JNIEnv *env;
+    void *rawEnv = NULL;
+    JNIEnv *env = NULL;
     jint res;
-    (*sJavaVM)->GetEnv(sJavaVM, (void **)&env, JNI_VERSION_1_6);
+
+    if (!sJavaVM) return NULL;
+
+    res = (*sJavaVM)->GetEnv(sJavaVM, &rawEnv, JNI_VERSION_1_6);
+    
     if (res == JNI_EDETACHED) {
-        (*sJavaVM)->AttachCurrentThread(sJavaVM, &env, NULL);
+        if ((*sJavaVM)->AttachCurrentThread(sJavaVM, &env, NULL) != JNI_OK) {
+            return NULL;
+        }
+    } else if (res == JNI_OK) {
+        env = (JNIEnv *)rawEnv;
     }
+
     return env;
 }
 
