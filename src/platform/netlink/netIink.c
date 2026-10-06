@@ -35,7 +35,9 @@ static JNIEnv *GetJNIEnv(void)
 {
     JNIEnv *env;
     (*sJavaVM)->GetEnv(sJavaVM, (void **)&env, JNI_VERSION_1_6);
-    (*sJavaVM)->AttachCurrentThread(sJavaVM, &env, NULL);
+    if (res == JNI_EDETACHED) {
+        (*sJavaVM)->AttachCurrentThread(sJavaVM, &env, NULL);
+    }
     return env;
 }
 
@@ -116,6 +118,7 @@ void OpenMultiplayerMenu(void)
 {
     if (!sGameActivityInstance) return;
     JNIEnv *env = GetJNIEnv();
+    if (!env) return;
     jstring jgame = (*env)->NewStringUTF(env, NetLink_GetGameId());
     (*env)->CallVoidMethod(env, sGameActivityInstance, sMidShowMultiplayerMenu, jgame);
     (*env)->DeleteLocalRef(env, jgame);
