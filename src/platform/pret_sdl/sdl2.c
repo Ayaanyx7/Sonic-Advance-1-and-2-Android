@@ -510,9 +510,13 @@ void VBlankIntrWait(void)
 
 if (NetLink_ConsumePendingMultiplayerStart())
 {
-    gMultiSioEnabled = TRUE;
-    MultiSioInit(0);
-    StartMultiPakConnect();
+    gGameMode = GAME_MODE_MULTI_PLAYER;
+    ApplyGameStageSettings();
+    if (LOADED_SAVE->playerName[0] != PLAYER_NAME_END_CHAR) {
+        CreateMultiplayerModeSelectScreen();
+    } else {
+        CreateNewProfileNameScreen(NEW_PROFILE_NAME_MULTIPLAYER);
+    }
 }
         
 SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
