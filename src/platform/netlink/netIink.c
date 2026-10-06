@@ -47,7 +47,7 @@ Java_com_satr_netlink_NetLinkBridge_nativeRegisterInstance(JNIEnv *env, jobject 
     jclass localClass = (*env)->GetObjectClass(env, thiz);
     sBridgeClass = (jclass)(*env)->NewGlobalRef(env, localClass);
 
-    sMidConnect    = (*env)->GetMethodID(env, sBridgeClass, "connect", "(Ljava/lang/String;Z)V");
+    sMidConnect = (*env)->GetMethodID(env, sBridgeClass, "connect", "(Ljava/lang/String;ZLjava/lang/String;)V");
     sMidSend       = (*env)->GetMethodID(env, sBridgeClass, "send", "([B)V");
     sMidPollSlot   = (*env)->GetMethodID(env, sBridgeClass, "pollSlot", "(I)[B");
     sMidDisconnect = (*env)->GetMethodID(env, sBridgeClass, "disconnect", "()V");
@@ -65,8 +65,10 @@ int NetLink_Connect(const char *room_name, int as_host)
     if (!sBridgeInstance) return 0;
     JNIEnv *env = GetJNIEnv();
     jstring jroom = (*env)->NewStringUTF(env, room_name);
-    (*env)->CallVoidMethod(env, sBridgeInstance, sMidConnect, jroom, (jboolean)as_host);
+    jstring jgame = (*env)->NewStringUTF(env, NetLink_GetGameId());
+    (*env)->CallVoidMethod(env, sBridgeInstance, sMidConnect, jroom, (jboolean)as_host, jgame);
     (*env)->DeleteLocalRef(env, jroom);
+    (*env)->DeleteLocalRef(env, jgame);
     return 1;
 }
 
