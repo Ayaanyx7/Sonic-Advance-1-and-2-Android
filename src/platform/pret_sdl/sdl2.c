@@ -513,16 +513,6 @@ void VBlankIntrWait(void)
 #include "game/shared/stage/stage.h"
 #include "game/sa2/multiplayer/mode_select.h"
 
-if (NetLink_ConsumePendingMultiplayerStart())
-{
-    gGameMode = GAME_MODE_MULTI_PLAYER;
-    ApplyGameStageSettings();
-    if (LOADED_SAVE->playerName[0] != PLAYER_NAME_END_CHAR) {
-        CreateMultiplayerModeSelectScreen();
-    } else {
-        CreateNewProfileNameScreen(NEW_PROFILE_NAME_MULTIPLAYER);
-    }
-}
         
 SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 
