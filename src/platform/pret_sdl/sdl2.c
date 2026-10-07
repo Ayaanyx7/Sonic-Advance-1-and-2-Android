@@ -510,6 +510,8 @@ void VBlankIntrWait(void)
 #include "global.h"
 #include "game/sa2/options_screen.h"
 #include "game/sa2/save.h"
+#include "game/shared/stage/stage.h"
+#include "game/sa2/multiplayer/mode_select.h"
 
 if (NetLink_ConsumePendingMultiplayerStart())
 {
