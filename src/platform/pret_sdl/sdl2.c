@@ -507,7 +507,7 @@ void VBlankIntrWait(void)
 #ifdef __ANDROID__
 #include "multi_sio.h"
 #include "game/sa2/multiplayer/multipak_connection.h"
-#include "game/global.h"
+#include "global.h"
 #include "game/sa2/options_screen.h"
 #include "game/sa2/save.h"
 
