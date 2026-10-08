@@ -114,6 +114,7 @@ void NetLink_Disconnect(void)
     if (!sBridgeInstance) return;
     JNIEnv *env = GetJNIEnv();
     (*env)->CallVoidMethod(env, sBridgeInstance, sMidDisconnect);
+    sAssignedId = -1;
 }
 
 JNIEXPORT void JNICALL
