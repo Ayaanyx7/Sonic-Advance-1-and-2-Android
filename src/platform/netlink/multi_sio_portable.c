@@ -1,26 +1,44 @@
-// src/platform/netlink/multi_sio_portable.c
-// PORTABLE replacement for multi_sio.c — same public API, backed by
-// NetLink (WebSocket relay) instead of real GBA SIO hardware timing.
-// Compiled ONLY for android/emscripten; src/multi_sio.c is excluded
-// from those platforms in the Makefile, so there's no duplicate symbol.
+// PORTABLE replacement for multi_sio.c: same public API, backed by NetLink
+// instead of GBA SIO hardware. Compiled only for android/emscripten.
 
 #include "global.h"
+#include "core.h"
 #include "multi_sio.h"
 #include "netlink.h"
-#include "core.h"
+#include <string.h>
 
 struct MultiSioArea gMultiSioArea = {};
 
+// Hardware delivers every player's packet every frame; a WebSocket doesn't.
+// A peer stays "connected" until this many frames pass with nothing from it.
+#define SLOT_TIMEOUT_FRAMES 45
+#define SLOT_NEVER_RECEIVED 255
+
+// What SIOMULTI0-3 read for a slot with nothing plugged in. 0 would mean
+// "no transfer finished yet", which the connect screen treats as "keep waiting".
+#define SIOMULTI_EMPTY 0xFFFF
+
+static u8 sFramesSinceRecv[MULTI_SIO_PLAYERS_MAX] = {
+    SLOT_NEVER_RECEIVED, SLOT_NEVER_RECEIVED, SLOT_NEVER_RECEIVED, SLOT_NEVER_RECEIVED
+};
 static u8 sSessionRan = 0;
 
-static u8 sMyPlayerId = 0; // 0 = parent/host, 1-3 = child/joiner slot
+// 0 = parent/host, 1-3 = child. Unassigned acts like a lone GBA: parent, id 0.
+static u8 GetMyPlayerId(void)
+{
+    int id = NetLink_GetAssignedId();
+    return (id >= 0 && id < MULTI_SIO_PLAYERS_MAX) ? (u8)id : 0;
+}
 
 void MultiSioInit(u32 connectedFlags)
 {
+    u8 i;
+
     CpuFill32(0, &gMultiSioArea, sizeof(struct MultiSioArea));
     gMultiSioArea.connectedFlags = (u8)connectedFlags;
-    sMyPlayerId = NetLink_GetAssignedId();
-    gMultiSioArea.type = (sMyPlayerId == 0) ? SIO_MULTI_PARENT : SIO_MULTI_CHILD;
+    gMultiSioArea.type = (GetMyPlayerId() == 0) ? SIO_MULTI_PARENT : SIO_MULTI_CHILD;
+    for (i = 0; i < MULTI_SIO_PLAYERS_MAX; i++)
+        sFramesSinceRecv[i] = SLOT_NEVER_RECEIVED;
 }
 
 void MultiSioStart(void)
@@ -29,6 +47,9 @@ void MultiSioStart(void)
         gMultiSioArea.startFlag = 1;
 }
 
+// Every "leave multiplayer" path clears gMultiSioEnabled before calling this.
+// The routine reset at mode select happens before a session starts, so it
+// must not drop the connection.
 void MultiSioStop(void)
 {
     if (!gMultiSioEnabled && sSessionRan) {
@@ -40,48 +61,53 @@ void MultiSioStop(void)
 
 u32 MultiSioMain(void *sendp, void *recvp, u32 loadRequest)
 {
-    sSessionRan = 1;
+    u8 myId = GetMyPlayerId();
     u8 recvSuccessFlags = 0;
     u8 i;
+
+    sSessionRan = 1;
+
+    // Re-derive the role every frame so it doesn't matter when the id arrived.
+    gMultiSioArea.type = (myId == 0) ? SIO_MULTI_PARENT : SIO_MULTI_CHILD;
 
     NetLink_Send((const unsigned char *)sendp, MULTI_SIO_BLOCK_SIZE);
 
     for (i = 0; i < MULTI_SIO_PLAYERS_MAX; i++) {
-        if (i == sMyPlayerId) {
+        unsigned char *slot = (unsigned char *)recvp + i * MULTI_SIO_BLOCK_SIZE;
+
+        if (i == myId) {
+            // Hardware echoes your own transmission into your own slot.
+            memcpy(slot, sendp, MULTI_SIO_BLOCK_SIZE);
             recvSuccessFlags |= (1 << i);
             continue;
         }
-        if (NetLink_PollSlot(i, (unsigned char *)recvp + (i * MULTI_SIO_BLOCK_SIZE), MULTI_SIO_BLOCK_SIZE)) {
+
+        // On a miss the slot keeps its last data, as on hardware.
+        if (NetLink_PollSlot(i, slot, MULTI_SIO_BLOCK_SIZE))
+            sFramesSinceRecv[i] = 0;
+        else if (sFramesSinceRecv[i] < SLOT_NEVER_RECEIVED)
+            sFramesSinceRecv[i]++;
+
+        if (sFramesSinceRecv[i] < SLOT_TIMEOUT_FRAMES)
             recvSuccessFlags |= (1 << i);
-        }
     }
 
     gMultiSioArea.recvSuccessFlags = recvSuccessFlags;
     gMultiSioArea.connectedFlags |= recvSuccessFlags;
 
-    ((struct SioMultiCnt *)REG_ADDR_SIOCNT)->id = sMyPlayerId;
-    for (i = 0; i < MULTI_SIO_PLAYERS_MAX; i++) {
-        (&REG_SIOMULTI0)[i] = (recvSuccessFlags & (1 << i)) ? MULTI_SIO_SYNC_DATA : 0;
-    }
+    ((struct SioMultiCnt *)REG_ADDR_SIOCNT)->id = myId;
+    for (i = 0; i < MULTI_SIO_PLAYERS_MAX; i++)
+        (&REG_SIOMULTI0)[i] = (recvSuccessFlags & (1 << i)) ? MULTI_SIO_SYNC_DATA : SIOMULTI_EMPTY;
 
-    // Mirrors real multi_sio.c's MultiSioRecvDataCheck() readiness check --
-    // this is what multipak_connection.c waits on to leave the "please
-    // wait" screen, and our shim previously never set it at all.
+    // Multiboot download readiness has no equivalent here (everyone has the
+    // full game), so treat it as done once the link is up.
     if (recvSuccessFlags & 1) {
         if (gMultiSioArea.type == SIO_MULTI_PARENT) {
             if ((recvSuccessFlags & 0x3) && recvSuccessFlags == gMultiSioArea.connectedFlags)
                 gMultiSioArea.loadEnable = 1;
-            // Real hardware's loadSuccessFlag gates on a multi-boot
-            // download finishing -- there's no equivalent here since
-            // every player already has the full game installed, so once
-            // loadEnable fires, treat that nonexistent step as already done.
             if (gMultiSioArea.loadEnable)
                 gMultiSioArea.loadSuccessFlag = 1;
         } else {
-            // Real hardware reads this bit out of the parent's actual
-            // packet payload. We're not parsing MultiSioPacket's internal
-            // fields here, so approximate: once the child is hearing from
-            // the parent at all, treat the parent's success as its own too.
             gMultiSioArea.loadSuccessFlag = 1;
         }
     }
@@ -95,11 +121,9 @@ u32 MultiSioMain(void *sendp, void *recvp, u32 loadRequest)
          | gMultiSioArea.loadSuccessFlag << 6
          | (gMultiSioArea.type == SIO_MULTI_PARENT) << 7
          | gMultiSioArea.connectedFlags << 8
-         | (gMultiSioArea.hardError != 0) << 12
-         | (sMyPlayerId >= MULTI_SIO_PLAYERS_MAX) << 13;
+         | (gMultiSioArea.hardError != 0) << 12;
 }
 
 void MultiSioIntr(void)
 {
-    
 }
