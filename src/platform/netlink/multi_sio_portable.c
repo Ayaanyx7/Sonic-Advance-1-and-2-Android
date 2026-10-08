@@ -7,8 +7,11 @@
 #include "global.h"
 #include "multi_sio.h"
 #include "netlink.h"
+#include "core.h"
 
 struct MultiSioArea gMultiSioArea = {};
+
+static u8 sSessionRan = 0;
 
 static u8 sMyPlayerId = 0; // 0 = parent/host, 1-3 = child/joiner slot
 
@@ -28,12 +31,16 @@ void MultiSioStart(void)
 
 void MultiSioStop(void)
 {
-    NetLink_Disconnect();
+    if (!gMultiSioEnabled && sSessionRan) {
+        NetLink_Disconnect();
+        sSessionRan = 0;
+    }
     gMultiSioArea.startFlag = 0;
 }
 
 u32 MultiSioMain(void *sendp, void *recvp, u32 loadRequest)
 {
+    sSessionRan = 1;
     u8 recvSuccessFlags = 0;
     u8 i;
 
