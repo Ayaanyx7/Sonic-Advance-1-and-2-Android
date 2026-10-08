@@ -134,9 +134,12 @@ public class NetLinkBridge {
     }
 
     public byte[] pollSlot(int playerIndex) {
-        if (playerIndex < 0 || playerIndex >= 4) return null;
-        return slotQueues[playerIndex].poll();
-    }
+    if (playerIndex < 0 || playerIndex >= 4) return null;
+    byte[] latest = null;
+    byte[] p;
+    while ((p = slotQueues[playerIndex].poll()) != null) latest = p;
+    return latest;
+}
 
     public void disconnect() {
         if (webSocket != null) {
