@@ -48,6 +48,10 @@
     <!-- Allow access to the vibrator -->
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+         <!-- Enable storage access for the app -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" 
+                     android:maxSdkVersion="28" />
     <!-- if you want to capture audio, uncomment this. -->
     <!-- <uses-permission android:name="android.permission.RECORD_AUDIO" /> -->
 
@@ -63,7 +67,8 @@
         android:icon="@drawable/ic_launcher"
         android:allowBackup="true"
         android:theme="@style/AppTheme"
-        android:hardwareAccelerated="true" >
+        android:hardwareAccelerated="true"
+        android:requestLegacyExternalStorage="true" >
 
         <!-- Example of setting SDL hints from AndroidManifest.xml:
         <meta-data android:name="SDL_ENV.SDL_ACCELEROMETER_AS_JOYSTICK" android:value="0"/>
