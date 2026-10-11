@@ -44,6 +44,12 @@ jobs:
           curl -L https://github.com/libsdl-org/SDL_image/releases/download/release-2.8.8/SDL2_image-2.8.8.tar.gz -o SDL2_image.tar.gz
           mkdir -p android-project/app/jni/SDL_image
           tar -xzf SDL2_image.tar.gz -C android-project/app/jni/SDL_image --strip-components=1
+          
+      - name: Download baserom
+        env:
+          BASEROM_URL: ${{ secrets.BASEROM_URL }}
+        run: |
+          curl -L "$BASEROM_URL" -o baserom_sa1.gba
       # STAGE 1: Explicitly pass NDK cross-compilers to the Makefile
       - name: Compile Game Assets and Native Tools
         run: |
