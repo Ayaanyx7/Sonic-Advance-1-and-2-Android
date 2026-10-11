@@ -33,17 +33,23 @@ jobs:
         run: |
           make tools
           make PLATFORM=android chao_garden/mb_chao_garden.gba.lz
-      - name: Fetch SDL2 source for Android build
+      - name: Fetch SDL2 and SDL2_image sources for Android build
         run: |
-         curl -L https://github.com/libsdl-org/SDL/releases/download/release-2.30.11/SDL2-2.30.11.tar.gz -o SDL2.tar.gz
-         mkdir -p android-project/app/jni/SDL
-         tar -xzf SDL2.tar.gz -C android-project/app/jni/SDL --strip-components=1
+          # SDL2
+          curl -L https://github.com/libsdl-org/SDL/releases/download/release-2.30.11/SDL2-2.30.11.tar.gz -o SDL2.tar.gz
+          mkdir -p android-project/app/jni/SDL
+          tar -xzf SDL2.tar.gz -C android-project/app/jni/SDL --strip-components=1
+
+          # SDL2_image
+          curl -L https://github.com/libsdl-org/SDL_image/releases/download/release-2.8.8/SDL2_image-2.8.8.tar.gz -o SDL2_image.tar.gz
+          mkdir -p android-project/app/jni/SDL_image
+          tar -xzf SDL2_image.tar.gz -C android-project/app/jni/SDL_image --strip-components=1
       # STAGE 1: Explicitly pass NDK cross-compilers to the Makefile
       - name: Compile Game Assets and Native Tools
         run: |
           export NDK_TOOLCHAIN=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin
           
-          make android GAME_NAME=sa1 GAME_REGION=USA PORTABLE=1 \
+          make PLATFORM=android GAME_NAME=sa1 GAME_REGION=USA PORTABLE=1 \
             CC=$NDK_TOOLCHAIN/armv7a-linux-androideabi24-clang \
             CXX=$NDK_TOOLCHAIN/armv7a-linux-androideabi24-clang++ \
             AR=$NDK_TOOLCHAIN/llvm-ar \
@@ -108,5 +114,5 @@ jobs:
       - name: Upload Completed Installable APK
         uses: actions/upload-artifact@v4
         with:
-          name: sonic-advance-1-release-apk
+          name: sonic-advance-1-debug-apk
           path: android-project/app/build/outputs/apk/release/*.apk
