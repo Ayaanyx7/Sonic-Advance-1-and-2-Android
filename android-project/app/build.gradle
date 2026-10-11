@@ -9,7 +9,7 @@ else {
 
 android {
     if (buildAsApplication) {
-        namespace "org.sega.sonicadv2"
+        namespace "org.sega.sonicadv1"
     }
     compileSdkVersion 34
     ndkVersion "26.1.10909125"
