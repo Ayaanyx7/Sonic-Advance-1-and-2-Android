@@ -1,4 +1,4 @@
-name: SA2 Android Debug Tests
+name: SA1 Android Debug Tests
 
 on:
   workflow_dispatch:
@@ -49,7 +49,7 @@ jobs:
         run: |
           export NDK_TOOLCHAIN=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin
           
-          make PLATFORM=android GAME_NAME=sa2 GAME_REGION=USA PORTABLE=1 \
+          make PLATFORM=android GAME_NAME=sa1 GAME_REGION=USA PORTABLE=1 \
             CC=$NDK_TOOLCHAIN/armv7a-linux-androideabi24-clang \
             CXX=$NDK_TOOLCHAIN/armv7a-linux-androideabi24-clang++ \
             AR=$NDK_TOOLCHAIN/llvm-ar \
@@ -114,5 +114,5 @@ jobs:
       - name: Upload Completed Installable APK
         uses: actions/upload-artifact@v4
         with:
-          name: sonic-advance-2-debug-apk
+          name: sonic-advance-1-debug-apk
           path: android-project/app/build/outputs/apk/debug/*.apk
