@@ -10,7 +10,7 @@ typedef struct {
 } KnownRom;
 
 static const KnownRom kKnownRoms[] = {
-    { "Sonic Advance 2 (USA)",    "7bcd6a07af7c894746fa28073fe0c0e34408022d" },
+    { "Sonic Advance 1 (EUR)",    "eb00f101af23d728075ac2117e27ecd8a4b4c3e9" },
 };
 
 static void BytesToHex(const unsigned char *bytes, int len, char *out_hex)
