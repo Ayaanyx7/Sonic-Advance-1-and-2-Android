@@ -202,7 +202,7 @@ C_SRCS_IN := $(shell find $(C_SUBDIR) -name "*.c" $(C_SRC_IGNORE_PATHS) -not -pa
 else ifeq ($(PLATFORM),sdl)
 C_SRCS_IN := $(shell find $(C_SUBDIR) -name "*.c" $(C_SRC_IGNORE_PATHS) -not -path "*/platform/win32/*" -not -path "*/platform/ps2/*" -not -path "*/platform/rom_verify/*" -not -path "*/platform/netlink/*")
 else ifeq ($(PLATFORM),android)
-C_SRCS_IN := $(shell find $(C_SUBDIR) -name "*.c" $(C_SRC_IGNORE_PATHS) -not -path "*/platform/win32/*" -not -path "*/platform/ps2/*" -not -path "*/multi_sio_portable.c")
+C_SRCS_IN := $(shell find $(C_SUBDIR) -name "*.c" $(C_SRC_IGNORE_PATHS) -not -path "*/platform/win32/*" -not -path "*/platform/ps2/*" -not -path "*/multi_sio.c")
 else ifeq ($(PLATFORM),sdl_psp)
 C_SRCS_IN := $(shell find $(C_SUBDIR) -name "*.c" $(C_SRC_IGNORE_PATHS) -not -path "*/platform/win32/*" -not -path "*/platform/ps2/*" -not -path "*/platform/rom_verify/*" -not -path "*/platform/netlink/*")
 else ifeq ($(PLATFORM),ps2)
