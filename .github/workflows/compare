@@ -1,0 +1,30 @@
+name: Compare against old SA1 port
+
+on:
+  workflow_dispatch:
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v4
+        with:
+          path: new
+
+      - name: Checkout old known-good SA1 branch
+        uses: actions/checkout@v4
+        with:
+          repository: Ayaanyx7/old-sa1-and-2-port
+          ref: Sa1-main
+          path: old
+
+      - name: Files that differ
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          echo "=== Makefile ==="
+          diff -q old/Makefile new/Makefile || true
+          for d in src include; do
+            echo "=== $d/ ==="
+            diff -rq -x .git -x netlink -x rom_verify old/$d new/$d || true
+          done
