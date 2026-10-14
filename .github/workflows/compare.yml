@@ -19,12 +19,15 @@ jobs:
           ref: Sa1-main
           path: old
 
-      - name: Files that differ
+      - name: Whole-repo file list
         run: |
           cd "$GITHUB_WORKSPACE"
-          echo "=== Makefile ==="
-          diff -q old/Makefile new/Makefile || true
-          for d in src include; do
-            echo "=== $d/ ==="
-            diff -rq -x .git -x netlink -x rom_verify old/$d new/$d || true
+          diff -rq -x .git -x build -x ext -x android-project -x .github -x netlink -x rom_verify old new || true
+
+      - name: Diffs of the files that matter for SA1
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          for f in Makefile src/lib/m4a/m4a.c src/platform/pret_sdl/sdl2.c; do
+            echo "=================== $f ==================="
+            { diff -u old/$f new/$f || true; } | head -400
           done
